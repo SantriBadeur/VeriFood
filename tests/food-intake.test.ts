@@ -45,3 +45,4 @@ describe('Inbound Food Intake & Physical Checklist (US-07, US-08)', () => {
     expect(food.remainingQuantity).toBe(0);
   });
 });
+

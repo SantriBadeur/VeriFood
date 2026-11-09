@@ -12,3 +12,4 @@ describe('UI Route Verification', () => {
     expect(DistributePage.default).toBeDefined();
   });
 });
+

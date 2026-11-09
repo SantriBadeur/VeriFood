@@ -24,3 +24,4 @@ describe('Auth Service (US-01, US-02)', () => {
     await expect(loginUser(email, 'password123')).rejects.toThrow('Akun Anda dinonaktifkan');
   });
 });
+

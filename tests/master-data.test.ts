@@ -28,3 +28,4 @@ describe('Master Data Service (US-03, US-04, US-05, US-06)', () => {
     ).rejects.toThrow('Hanya Admin yang dapat mengelola data penerima');
   });
 });
+
