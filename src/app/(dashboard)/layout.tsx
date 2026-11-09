@@ -19,7 +19,6 @@ import {
   Search,
   Bell,
   Settings,
-  Sparkles,
 } from 'lucide-react';
 
 interface CurrentUser {
@@ -77,7 +76,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   });
 
   return (
-    <div className="min-h-screen bg-[#EBF7F3] p-2 sm:p-4 lg:p-6 flex items-center justify-center font-sans antialiased">
+    <div className="h-screen w-screen overflow-hidden bg-[#EBF7F3] p-2 sm:p-3 lg:p-4 flex flex-col font-sans antialiased">
       {/* Mobile Backdrop */}
       {sidebarOpen && (
         <div
@@ -86,21 +85,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         />
       )}
 
-      {/* Floating Island Canvas Container (Matches reference image) */}
-      <div className="w-full max-w-[1440px] h-[calc(100vh-1rem)] sm:h-[calc(100vh-2rem)] lg:h-[calc(100vh-3rem)] bg-white rounded-3xl shadow-2xl shadow-emerald-950/10 border border-emerald-100/60 flex overflow-hidden relative">
-        {/* Left Curved Dock Sidebar (Deep Pine Green with Organic Curve) */}
+      {/* Floating Island Canvas Container */}
+      <div className="w-full h-full max-w-[1440px] mx-auto bg-white rounded-2xl sm:rounded-3xl shadow-2xl shadow-emerald-950/10 border border-emerald-100/60 flex overflow-hidden relative">
+        {/* Left Curved Dock Sidebar (Deep Pine Green with Organic Curves) */}
         <aside
-          className={`fixed inset-y-0 left-0 z-50 w-20 bg-[#2B6153] flex flex-col items-center py-6 justify-between transition-transform duration-300 lg:static lg:translate-x-0 ${
+          className={`fixed inset-y-0 left-0 z-50 w-16 sm:w-20 bg-[#2B6153] flex flex-col items-center py-4 justify-between transition-transform duration-300 lg:static lg:translate-x-0 h-full shrink-0 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
-          {/* Top Geometric Logo */}
-          <div className="flex flex-col items-center gap-3">
+          {/* Top Logo */}
+          <div className="flex flex-col items-center gap-2 shrink-0">
             <Link href="/dashboard" className="relative group">
-              <div className="w-11 h-11 rounded-2xl bg-[#F4B942] flex items-center justify-center text-[#2B6153] font-black text-xl shadow-md transition group-hover:scale-105">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-[#F4B942] flex items-center justify-center text-[#2B6153] font-black text-lg sm:text-xl shadow-md transition group-hover:scale-105">
                 SB
               </div>
-              <span className="absolute -bottom-1 -right-1 w-3 h-3 bg-white rounded-full border-2 border-[#2B6153]" />
+              <span className="absolute -bottom-1 -right-1 w-2.5 h-2.5 bg-white rounded-full border-2 border-[#2B6153]" />
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
@@ -110,8 +109,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </button>
           </div>
 
-          {/* Navigation Icons Dock */}
-          <nav className="flex flex-col items-center gap-3 my-auto py-2">
+          {/* Navigation Icons Dock (Compact with tooltips) */}
+          <nav className="flex flex-col items-center gap-1.5 sm:gap-2 my-auto py-2 overflow-y-auto no-scrollbar w-full px-2">
             {visibleNavItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
@@ -121,15 +120,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
                   title={item.label}
-                  className={`w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-200 group relative ${
+                  className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all duration-200 group relative shrink-0 ${
                     isActive
                       ? 'bg-white text-[#2B6153] shadow-md shadow-black/10 scale-105'
                       : 'text-emerald-100/70 hover:text-white hover:bg-white/10'
                   }`}
                 >
-                  <Icon className="w-5 h-5 shrink-0" />
-                  {/* Tooltip for desktop */}
-                  <span className="absolute left-16 px-2.5 py-1 bg-slate-900 text-white text-xs font-medium rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 transition whitespace-nowrap z-50 shadow-lg">
+                  <Icon className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                  {/* Tooltip on hover */}
+                  <span className="absolute left-14 sm:left-16 px-2.5 py-1 bg-slate-900 text-white text-xs font-medium rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 transition whitespace-nowrap z-50 shadow-lg">
                     {item.label}
                   </span>
                 </Link>
@@ -138,14 +137,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </nav>
 
           {/* Bottom Dock Logout */}
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-col items-center gap-1 shrink-0 pt-2 border-t border-emerald-700/50 w-full px-2">
             <button
               onClick={handleLogout}
               title="Keluar Akun"
-              className="w-11 h-11 rounded-2xl flex items-center justify-center text-red-300 hover:text-white hover:bg-red-500/20 transition group relative"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center text-red-300 hover:text-white hover:bg-red-500/20 transition group relative"
             >
-              <LogOut className="w-5 h-5" />
-              <span className="absolute left-16 px-2.5 py-1 bg-slate-900 text-white text-xs font-medium rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 transition whitespace-nowrap z-50 shadow-lg">
+              <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="absolute left-14 sm:left-16 px-2.5 py-1 bg-slate-900 text-white text-xs font-medium rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 transition whitespace-nowrap z-50 shadow-lg">
                 Keluar Akun
               </span>
             </button>
@@ -153,31 +152,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </aside>
 
         {/* Inner Canvas Area (Top Bar & Main Viewport) */}
-        <div className="flex-1 flex flex-col overflow-hidden bg-slate-50/30">
-          {/* Top Bar Header (Reference styled with search bar pill and user profile pill) */}
-          <header className="h-20 px-6 sm:px-8 flex items-center justify-between border-b border-slate-100/80 bg-white">
+        <div className="flex-1 flex flex-col h-full overflow-hidden bg-slate-50/20">
+          {/* Top Bar Header (Sticky, Reference styled) */}
+          <header className="h-16 sm:h-18 px-4 sm:px-6 lg:px-8 flex items-center justify-between border-b border-slate-100 bg-white shrink-0">
             {/* Mobile Toggle & Search Bar */}
             <div className="flex items-center gap-3 flex-1 max-w-md">
               <button
                 onClick={() => setSidebarOpen(true)}
                 className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition"
               >
-                <Menu className="w-6 h-6" />
+                <Menu className="w-5 h-5" />
               </button>
 
               <div className="relative w-full">
-                <Search className="absolute left-4 top-3 w-4 h-4 text-slate-400" />
+                <Search className="absolute left-3.5 top-2.5 w-4 h-4 text-slate-400" />
                 <input
                   type="text"
                   placeholder="Search or type command..."
-                  className="w-full pl-10 pr-4 py-2 bg-slate-50/70 border border-slate-200/60 rounded-full text-xs sm:text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#2B6153] focus:ring-2 focus:ring-[#2B6153]/10 transition"
+                  className="w-full pl-9 pr-4 py-1.5 sm:py-2 bg-slate-50/70 border border-slate-200/60 rounded-full text-xs sm:text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#2B6153] focus:ring-2 focus:ring-[#2B6153]/10 transition"
                 />
               </div>
             </div>
 
             {/* Right Controls: Settings, Bell, & User Profile Pill */}
-            <div className="flex items-center gap-2 sm:gap-4 pl-4">
-              <div className="hidden sm:flex items-center gap-1.5 text-slate-400">
+            <div className="flex items-center gap-2 sm:gap-4 pl-3">
+              <div className="hidden sm:flex items-center gap-1 text-slate-400">
                 <button
                   title="Pengaturan"
                   className="p-2 rounded-full hover:bg-slate-100 hover:text-slate-600 transition"
@@ -193,9 +192,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </button>
               </div>
 
-              {/* User Profile Pill (Matches reference image top-right "Michael Smith") */}
-              <div className="flex items-center gap-2.5 pl-2 sm:pl-3 py-1 pr-1.5 border border-slate-200/70 rounded-full bg-slate-50/50 hover:bg-slate-100/60 transition">
-                <div className="text-right hidden md:block">
+              {/* User Profile Pill (Matches reference top-right "Michael Smith") */}
+              <div className="flex items-center gap-2 sm:gap-2.5 pl-2.5 sm:pl-3 py-1 pr-1.5 border border-slate-200/70 rounded-full bg-slate-50/50 hover:bg-slate-100/60 transition">
+                <div className="text-right hidden sm:block">
                   <p className="text-xs font-bold text-slate-800 leading-tight">
                     {currentUser?.name || (loadingUser ? 'Memuat...' : 'Pengguna')}
                   </p>
@@ -203,14 +202,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     {currentUser?.role === 'ADMIN' ? 'Administrator' : 'Relawan'}
                   </p>
                 </div>
-                <div className="w-8 h-8 rounded-full bg-[#2B6153] text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#2B6153] text-white flex items-center justify-center font-bold text-xs shadow-sm">
                   {currentUser?.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}
                 </div>
               </div>
             </div>
           </header>
 
-          {/* Viewport for Dashboard & Other Pages */}
+          {/* Viewport for Pages (Scrolls independently) */}
           <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
             {children}
           </main>
