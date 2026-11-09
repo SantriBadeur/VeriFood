@@ -1,30 +1,48 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Building2, Plus, Search, Trash2, Edit2 } from 'lucide-react';
+import { Building2, Plus, Search, Trash2, Edit2, Filter, Phone, MapPin, X } from 'lucide-react';
 
 interface Donor {
   id: string;
   name: string;
-  type: string;
+  type: 'RESTORAN' | 'KATERING' | 'SUPERMARKET' | 'INDIVIDU';
   contact: string;
   address?: string;
+  createdAt: string;
 }
+
+const CATEGORIES = [
+  { label: 'Semua Kategori', value: '' },
+  { label: 'Restoran', value: 'RESTORAN' },
+  { label: 'Katering', value: 'KATERING' },
+  { label: 'Supermarket', value: 'SUPERMARKET' },
+  { label: 'Individu', value: 'INDIVIDU' },
+];
 
 export default function DonorsPage() {
   const [donors, setDonors] = useState<Donor[]>([]);
   const [search, setSearch] = useState('');
+  const [selectedType, setSelectedType] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // Modal
-  const [showModal, setShowModal] = useState(false);
+  // Modal State
+  const [modalMode, setModalMode] = useState<'create' | 'edit' | null>(null);
+  const [selectedDonorId, setSelectedDonorId] = useState<string | null>(null);
   const [name, setName] = useState('');
-  const [type, setType] = useState('RESTORAN');
+  const [type, setType] = useState<'RESTORAN' | 'KATERING' | 'SUPERMARKET' | 'INDIVIDU'>('RESTORAN');
   const [contact, setContact] = useState('');
   const [address, setAddress] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
 
   const loadData = () => {
-    fetch(`/api/donors?search=${encodeURIComponent(search)}`)
+    setLoading(true);
+    const query = new URLSearchParams();
+    if (search) query.append('search', search);
+    if (selectedType) query.append('type', selectedType);
+
+    fetch(`/api/donors?${query.toString()}`)
       .then((res) => (res.ok ? res.json() : { data: [] }))
       .then((res) => setDonors(res.data || []))
       .catch(() => setDonors([]))
@@ -33,113 +51,246 @@ export default function DonorsPage() {
 
   useEffect(() => {
     loadData();
-  }, [search]);
+  }, [search, selectedType]);
+
+  const openCreateModal = () => {
+    setModalMode('create');
+    setSelectedDonorId(null);
+    setName('');
+    setType('RESTORAN');
+    setContact('');
+    setAddress('');
+    setFormError('');
+  };
+
+  const openEditModal = (donor: Donor) => {
+    setModalMode('edit');
+    setSelectedDonorId(donor.id);
+    setName(donor.name);
+    setType(donor.type);
+    setContact(donor.contact);
+    setAddress(donor.address || '');
+    setFormError('');
+  };
+
+  const closeModal = () => {
+    setModalMode(null);
+    setSelectedDonorId(null);
+    setFormError('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
+    setFormError('');
+
     try {
-      const res = await fetch('/api/donors', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, type, contact, address }),
-      });
+      if (modalMode === 'create') {
+        const res = await fetch('/api/donors', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, type, contact, address }),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || 'Gagal menambah donatur');
+        }
+      } else if (modalMode === 'edit' && selectedDonorId) {
+        const res = await fetch(`/api/donors/${selectedDonorId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, type, contact, address }),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || 'Gagal memperbarui data donatur');
+        }
+      }
 
-      if (!res.ok) throw new Error('Gagal menambah donatur');
-
-      setShowModal(false);
-      setName('');
-      setContact('');
-      setAddress('');
+      closeModal();
       loadData();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Error');
+      setFormError(err instanceof Error ? err.message : 'Terjadi kesalahan sistem');
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Yakin ingin menghapus donatur ini?')) return;
+  const handleDelete = async (id: string, donorName: string) => {
+    if (!confirm(`Hapus donatur "${donorName}"? Data akan disembunyikan dari daftar aktif.`)) {
+      return;
+    }
     try {
       const res = await fetch(`/api/donors/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Gagal menghapus donatur');
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Gagal menghapus donatur');
+      }
       loadData();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Error');
+      alert(err instanceof Error ? err.message : 'Gagal menghapus donatur');
+    }
+  };
+
+  const getTypeBadgeClass = (t: string) => {
+    switch (t) {
+      case 'RESTORAN':
+        return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'KATERING':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
+      case 'SUPERMARKET':
+        return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'INDIVIDU':
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      default:
+        return 'bg-slate-50 text-slate-700 border-slate-200';
     }
   };
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Direktori Donatur</h1>
-          <p className="text-sm text-slate-500">
-            Daftar mitra penyedia surplus makanan (Restoran, Katering, Supermarket, Individu).
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-slate-900">Direktori Donatur</h1>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700 font-semibold">
+              {donors.length} Mitra
+            </span>
+          </div>
+          <p className="text-sm text-slate-500 mt-1">
+            Kelola mitra penyedia surplus makanan untuk pencegahan pemborosan pangan.
           </p>
         </div>
         <button
-          onClick={() => setShowModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition shadow-sm w-fit"
+          onClick={openCreateModal}
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold transition shadow-sm w-fit"
         >
           <Plus className="w-4 h-4" /> Tambah Donatur
         </button>
       </div>
 
-      {/* Search Input */}
-      <div className="relative max-w-sm">
-        <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Cari donatur, kontak, atau alamat..."
-          className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:border-emerald-500"
-        />
+      {/* Filter & Search Bar */}
+      <div className="flex flex-col md:flex-row md:items-center gap-3">
+        {/* Search Input */}
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Cari nama mitra, kontak, atau alamat..."
+            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-3 top-2.5 text-xs text-slate-400 hover:text-slate-600"
+            >
+              Reset
+            </button>
+          )}
+        </div>
+
+        {/* Quick Filter Categories */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+          <span className="text-xs font-semibold text-slate-400 flex items-center gap-1 mr-1">
+            <Filter className="w-3.5 h-3.5" /> Filter:
+          </span>
+          {CATEGORIES.map((cat) => {
+            const active = selectedType === cat.value;
+            return (
+              <button
+                key={cat.value}
+                onClick={() => setSelectedType(cat.value)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition border ${
+                  active
+                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300'
+                }`}
+              >
+                {cat.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Donors Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500 font-semibold border-b border-slate-200">
+            <thead className="bg-slate-50/80 text-[11px] uppercase tracking-wider text-slate-500 font-semibold border-b border-slate-200">
               <tr>
-                <th className="px-6 py-3.5">Nama Donatur</th>
-                <th className="px-6 py-3.5">Kategori</th>
-                <th className="px-6 py-3.5">Kontak</th>
-                <th className="px-6 py-3.5">Alamat</th>
-                <th className="px-6 py-3.5 text-right">Aksi</th>
+                <th className="px-6 py-4">Mitra Donatur</th>
+                <th className="px-6 py-4">Kategori</th>
+                <th className="px-6 py-4">Kontak</th>
+                <th className="px-6 py-4">Alamat Operasional</th>
+                <th className="px-6 py-4 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200">
+            <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-slate-400">
-                    Memuat donatur...
+                  <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
+                    Memuat data donatur...
                   </td>
                 </tr>
               ) : donors.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-slate-400">
-                    Tidak ditemukan data donatur.
+                  <td colSpan={5} className="px-6 py-12 text-center">
+                    <Building2 className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                    <p className="text-slate-500 font-medium">Tidak ada donatur yang sesuai</p>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Coba ubah kata kunci pencarian atau filter kategori.
+                    </p>
                   </td>
                 </tr>
               ) : (
                 donors.map((d) => (
-                  <tr key={d.id} className="hover:bg-slate-50">
-                    <td className="px-6 py-4 font-medium text-slate-900">{d.name}</td>
+                  <tr key={d.id} className="hover:bg-slate-50/70 transition">
                     <td className="px-6 py-4">
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700">
+                      <div className="font-semibold text-slate-900">{d.name}</div>
+                      <div className="text-[11px] text-slate-400">ID: {d.id.substring(0, 8)}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${getTypeBadgeClass(
+                          d.type
+                        )}`}
+                      >
                         {d.type}
                       </span>
                     </td>
-                    <td className="px-6 py-4">{d.contact}</td>
-                    <td className="px-6 py-4 text-slate-500">{d.address || '-'}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-1.5 text-slate-700">
+                        <Phone className="w-3.5 h-3.5 text-slate-400" />
+                        <span>{d.contact}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-start gap-1.5 text-slate-500 max-w-xs truncate">
+                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                        <span>{d.address || '-'}</span>
+                      </div>
+                    </td>
                     <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={() => handleDelete(d.id)}
-                        className="text-red-600 hover:text-red-800 p-1 rounded"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="inline-flex items-center gap-1">
+                        <button
+                          onClick={() => openEditModal(d)}
+                          title="Ubah Data Donatur"
+                          className="p-1.5 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(d.id, d.name)}
+                          title="Hapus Donatur (Soft Delete)"
+                          className="p-1.5 text-slate-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -149,27 +300,56 @@ export default function DonorsPage() {
         </div>
       </div>
 
-      {/* Modal Tambah Donatur */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <form onSubmit={handleSubmit} className="bg-white rounded-xl max-w-md w-full p-6 space-y-4">
-            <h3 className="text-base font-bold text-slate-900">Tambah Donatur Baru</h3>
+      {/* Modal Tambah / Ubah Donatur */}
+      {modalMode && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-200"
+          >
+            <div className="flex items-center justify-between border-b pb-3 border-slate-100">
+              <h3 className="text-base font-bold text-slate-900">
+                {modalMode === 'create' ? 'Tambah Donatur Baru' : 'Ubah Data Donatur'}
+              </h3>
+              <button
+                type="button"
+                onClick={closeModal}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {formError && (
+              <div className="p-3 bg-red-50 text-red-700 border border-red-200 rounded-xl text-xs font-medium">
+                {formError}
+              </div>
+            )}
+
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Nama</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
+                Nama Mitra Donatur
+              </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                placeholder="cth. Restoran Sedap Rasa"
                 required
-                className="w-full border rounded-lg p-2 text-sm"
+                className="w-full border border-slate-300 rounded-xl p-2.5 text-sm focus:outline-none focus:border-emerald-500"
               />
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Kategori</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
+                Kategori Donatur
+              </label>
               <select
                 value={type}
-                onChange={(e) => setType(e.target.value)}
-                className="w-full border rounded-lg p-2 text-sm"
+                onChange={(e) =>
+                  setType(e.target.value as 'RESTORAN' | 'KATERING' | 'SUPERMARKET' | 'INDIVIDU')
+                }
+                className="w-full border border-slate-300 rounded-xl p-2.5 text-sm focus:outline-none focus:border-emerald-500 bg-white"
               >
                 <option value="RESTORAN">Restoran</option>
                 <option value="KATERING">Katering</option>
@@ -177,38 +357,53 @@ export default function DonorsPage() {
                 <option value="INDIVIDU">Individu</option>
               </select>
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Kontak/No. HP</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
+                Kontak / No. Telepon / WhatsApp
+              </label>
               <input
                 type="text"
                 value={contact}
                 onChange={(e) => setContact(e.target.value)}
+                placeholder="cth. 08123456789"
                 required
-                className="w-full border rounded-lg p-2 text-sm"
+                className="w-full border border-slate-300 rounded-xl p-2.5 text-sm focus:outline-none focus:border-emerald-500"
               />
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Alamat</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
+                Alamat Operasional (Opsional)
+              </label>
               <textarea
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
+                placeholder="cth. Jl. Pahlawan No. 45, Jakarta Selatan"
                 rows={2}
-                className="w-full border rounded-lg p-2 text-sm"
+                className="w-full border border-slate-300 rounded-xl p-2.5 text-sm focus:outline-none focus:border-emerald-500"
               />
             </div>
-            <div className="flex justify-end gap-2 pt-2">
+
+            <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
               <button
                 type="button"
-                onClick={() => setShowModal(false)}
-                className="px-4 py-2 border rounded-lg text-sm text-slate-600 hover:bg-slate-50"
+                onClick={closeModal}
+                disabled={submitting}
+                className="px-4 py-2 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition"
               >
                 Batal
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700"
+                disabled={submitting}
+                className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-semibold hover:bg-emerald-700 transition shadow-sm disabled:opacity-50"
               >
-                Simpan Donatur
+                {submitting
+                  ? 'Menyimpan...'
+                  : modalMode === 'create'
+                  ? 'Simpan Donatur'
+                  : 'Perbarui Data'}
               </button>
             </div>
           </form>
@@ -217,4 +412,3 @@ export default function DonorsPage() {
     </div>
   );
 }
-

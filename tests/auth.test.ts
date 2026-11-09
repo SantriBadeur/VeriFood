@@ -23,5 +23,20 @@ describe('Auth Service (US-01, US-02)', () => {
     await toggleUserActive(newUser.id, false);
     await expect(loginUser(email, 'password123')).rejects.toThrow('Akun Anda dinonaktifkan');
   });
+
+  it('should verify session token and return payload with correct user role', async () => {
+    const { createSessionToken, verifySessionToken } = await import('../src/lib/auth');
+    const token = createSessionToken({
+      id: 'test-user-id',
+      email: 'relawan@sisaberkah.org',
+      name: 'Relawan Test',
+      role: 'RELAWAN',
+    });
+    const payload = verifySessionToken(token);
+    expect(payload).not.toBeNull();
+    expect(payload?.role).toBe('RELAWAN');
+    expect(payload?.email).toBe('relawan@sisaberkah.org');
+  });
 });
+
 

@@ -10,6 +10,21 @@ describe('UI Route Verification', () => {
 
     const DistributePage = await import('../src/app/(dashboard)/distribusi/buat/page');
     expect(DistributePage.default).toBeDefined();
+
+    const LoginPage = await import('../src/app/(auth)/login/page');
+    expect(LoginPage.default).toBeDefined();
+
+    const DashboardLayout = await import('../src/app/(dashboard)/layout');
+    expect(DashboardLayout.default).toBeDefined();
+
+    const DonorsPage = await import('../src/app/(dashboard)/donatur/page');
+    expect(DonorsPage.default).toBeDefined();
+
+    const BeneficiariesPage = await import('../src/app/(dashboard)/penerima/page');
+    expect(BeneficiariesPage.default).toBeDefined();
+
+    const AuthMeRoute = await import('../src/app/api/auth/me/route');
+    expect(AuthMeRoute.GET).toBeDefined();
   });
 });
 
