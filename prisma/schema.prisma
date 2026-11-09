@@ -154,3 +154,4 @@ model AuditLog {
   details    String   // JSON string of differences or context
   createdAt  DateTime @default(now())
 }
+

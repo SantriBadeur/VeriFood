@@ -10,3 +10,4 @@ describe('Database Setup & Seed', () => {
     expect(admin?.role).toBe('ADMIN');
   });
 });
+
