@@ -1,0 +1,156 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  RELAWAN
+}
+
+enum DonorType {
+  RESTORAN
+  KATERING
+  SUPERMARKET
+  INDIVIDU
+}
+
+enum BeneficiaryType {
+  PANTI_ASUHAN
+  KOMUNITAS
+  KELUARGA_PRASEJAHTERA
+}
+
+enum PhysicalStatus {
+  DITERIMA
+  DITOLAK
+}
+
+enum DistributionStatus {
+  TERJADWAL
+  DIKIRIM
+  DITERIMA
+  DIBATALKAN
+}
+
+model User {
+  id                      String         @id @default(uuid())
+  email                   String         @unique
+  name                    String
+  passwordHash            String
+  role                    Role           @default(RELAWAN)
+  isActive                Boolean        @default(true)
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+  
+  foodEntries             FoodStock[]    @relation("FoodCreatedBy")
+  createdDistributions    Distribution[] @relation("DistributionCreatedBy")
+  assignedDistributions   Distribution[] @relation("DistributionAssignedTo")
+  dispatchedDistributions Distribution[] @relation("DistributionDispatchedBy")
+  deliveredDistributions  Distribution[] @relation("DistributionDeliveredBy")
+  auditLogs               AuditLog[]
+}
+
+model Donor {
+  id          String      @id @default(uuid())
+  name        String
+  type        DonorType
+  contact     String
+  address     String?
+  isDeleted   Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  foods       FoodStock[]
+}
+
+model Beneficiary {
+  id          String            @id @default(uuid())
+  name        String
+  type        BeneficiaryType
+  contact     String
+  address     String
+  isDeleted   Boolean           @default(false)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  
+  distributions Distribution[]
+}
+
+model FoodStock {
+  id                 String             @id @default(uuid())
+  donorId            String
+  donor              Donor              @relation(fields: [donorId], references: [id])
+  name               String
+  initialQuantity    Float
+  remainingQuantity  Float
+  unit               String             // e.g., "porsi", "kg", "kotak"
+  expiryAt           DateTime
+  
+  // Physical Validation Checklist (US-08)
+  packagingIntact    Boolean            // true: Utuh, false: Rusak
+  temperatureSafe    Boolean            // true: Sesuai, false: Tidak Sesuai
+  visualSmellOk      Boolean            // true: Segar, false: Mencurigakan
+  physicalStatus     PhysicalStatus     // DITERIMA or DITOLAK
+  notes              String?
+  
+  // Disposal/Write-off (if expired in warehouse)
+  isDisposed         Boolean            @default(false)
+  disposalReason     String?
+  disposedAt         DateTime?
+  
+  createdByUserId    String
+  createdByUser      User               @relation("FoodCreatedBy", fields: [createdByUserId], references: [id])
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  
+  distributionItems  DistributionItem[]
+}
+
+model Distribution {
+  id                 String             @id @default(uuid())
+  beneficiaryId      String
+  beneficiary        Beneficiary        @relation(fields: [beneficiaryId], references: [id])
+  scheduledDate      DateTime
+  status             DistributionStatus @default(TERJADWAL)
+  notes              String?
+  
+  // Personnel Tracking (US-16)
+  createdByUserId    String
+  createdByUser      User               @relation("DistributionCreatedBy", fields: [createdByUserId], references: [id])
+  assignedToUserId   String?            // Optional assigned volunteer
+  assignedToUser     User?              @relation("DistributionAssignedTo", fields: [assignedToUserId], references: [id])
+  dispatchedByUserId String?           // Volunteer/Admin who changed status to DIKIRIM
+  dispatchedByUser   User?              @relation("DistributionDispatchedBy", fields: [dispatchedByUserId], references: [id])
+  deliveredByUserId  String?           // Volunteer/Admin who changed status to DITERIMA
+  deliveredByUser    User?              @relation("DistributionDeliveredBy", fields: [deliveredByUserId], references: [id])
+  
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  
+  items              DistributionItem[]
+}
+
+model DistributionItem {
+  id              String       @id @default(uuid())
+  distributionId  String
+  distribution    Distribution @relation(fields: [distributionId], references: [id], onDelete: Cascade)
+  foodStockId     String
+  foodStock       FoodStock    @relation(fields: [foodStockId], references: [id])
+  quantity        Float
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  action     String   // e.g. "USER_LOGIN", "CREATE_STOCK", "CORRECT_STOCK", "STATUS_CHANGE", "DISPOSAL"
+  entity     String   // "FoodStock", "Distribution", "Donor", "User"
+  entityId   String
+  details    String   // JSON string of differences or context
+  createdAt  DateTime @default(now())
+}
