@@ -214,10 +214,15 @@ export const authService = {
       details: { email: user.email },
     });
 
+    const isDev = process.env.NODE_ENV !== 'production';
+    if (isDev) {
+      console.log(`[DEV ONLY] Password reset URL for ${user.email}: ${resetUrl}`);
+    }
+
     return {
       success: true,
       message: 'Jika email terdaftar, instruksi pengaturan ulang kata sandi telah dikirim.',
-      devResetUrl: resetUrl,
+      ...(isDev ? { devResetUrl: resetUrl } : {}),
     };
   },
 
@@ -263,16 +268,26 @@ export const authService = {
 
     const passwordHash = await hashPassword(newPassword);
 
-    await prisma.$transaction([
-      prisma.user.update({
+    await prisma.$transaction(async (tx) => {
+      // Atomic consumption: only succeeds if token is still unused and unexpired
+      const updated = await tx.passwordResetToken.updateMany({
+        where: {
+          token,
+          usedAt: null,
+          expiresAt: { gt: new Date() },
+        },
+        data: { usedAt: new Date() },
+      });
+
+      if (updated.count === 0) {
+        throw new Error('Tautan pengaturan ulang kata sandi tidak valid atau telah kedaluwarsa');
+      }
+
+      await tx.user.update({
         where: { id: userId },
         data: { passwordHash },
-      }),
-      prisma.passwordResetToken.update({
-        where: { token },
-        data: { usedAt: new Date() },
-      }),
-    ]);
+      });
+    });
 
     await auditService.record({
       userId,

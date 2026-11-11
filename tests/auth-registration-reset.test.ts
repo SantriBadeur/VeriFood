@@ -68,6 +68,20 @@ describe('Auth Service - Registration & Password Reset', () => {
     expect(tokenRecord?.expiresAt.getTime()).toBeGreaterThan(Date.now());
   });
 
+  it('requestPasswordReset: never returns devResetUrl when NODE_ENV is production', async () => {
+    const prevEnv = process.env.NODE_ENV;
+    try {
+      // @ts-expect-error mutating for test
+      process.env.NODE_ENV = 'production';
+      const res = await authService.requestPasswordReset(testEmail, 'http://localhost:3000');
+      expect(res.success).toBe(true);
+      expect(res.devResetUrl).toBeUndefined();
+    } finally {
+      // @ts-expect-error restoring
+      process.env.NODE_ENV = prevEnv;
+    }
+  });
+
   it('verifyResetToken: accepts valid fresh token and rejects expired/used token', async () => {
     const user = await prisma.user.findUnique({ where: { email: testEmail } });
     expect(user).not.toBeNull();
@@ -128,5 +142,30 @@ describe('Auth Service - Registration & Password Reset', () => {
     const newLogin = await authService.login(testEmail, newPassword);
     expect(newLogin.token).toBeDefined();
     expect(newLogin.user.email).toBe(testEmail);
+  });
+
+  it('resetPasswordWithToken: atomic token consumption prevents race condition on concurrent resets', async () => {
+    await authService.requestPasswordReset(testEmail);
+    const user = await prisma.user.findUnique({ where: { email: testEmail } });
+    const tokenRecord = await prisma.passwordResetToken.findFirst({
+      where: { userId: user!.id, usedAt: null },
+      orderBy: { createdAt: 'desc' },
+    });
+    expect(tokenRecord).not.toBeNull();
+
+    // Fire 2 concurrent reset requests with the same token
+    const results = await Promise.allSettled([
+      authService.resetPasswordWithToken(tokenRecord!.token, 'concurrentPassA123'),
+      authService.resetPasswordWithToken(tokenRecord!.token, 'concurrentPassB123'),
+    ]);
+
+    const fulfilled = results.filter((r) => r.status === 'fulfilled');
+    const rejected = results.filter((r) => r.status === 'rejected');
+
+    expect(fulfilled.length).toBe(1);
+    expect(rejected.length).toBe(1);
+    expect((rejected[0] as PromiseRejectedResult).reason.message).toContain(
+      'Tautan pengaturan ulang kata sandi tidak valid atau telah kedaluwarsa'
+    );
   });
 });
