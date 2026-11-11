@@ -14,6 +14,15 @@ describe('UI Route Verification', () => {
     const LoginPage = await import('../src/app/(auth)/login/page');
     expect(LoginPage.default).toBeDefined();
 
+    const RegisterPage = await import('../src/app/(auth)/register/page');
+    expect(RegisterPage.default).toBeDefined();
+
+    const ForgotPasswordPage = await import('../src/app/(auth)/forgot-password/page');
+    expect(ForgotPasswordPage.default).toBeDefined();
+
+    const ResetPasswordPage = await import('../src/app/(auth)/reset-password/page');
+    expect(ResetPasswordPage.default).toBeDefined();
+
     const DashboardLayout = await import('../src/app/(dashboard)/layout');
     expect(DashboardLayout.default).toBeDefined();
 

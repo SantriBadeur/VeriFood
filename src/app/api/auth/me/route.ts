@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifySessionToken } from '@/lib/auth';
 
-export async function GET(req?: Request) {
+export async function GET(req: Request) {
   try {
     let token: string | undefined;
     try {

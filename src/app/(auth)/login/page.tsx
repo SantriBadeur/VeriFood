@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { Eye, EyeOff, ShieldCheck, HeartHandshake, Sparkles } from 'lucide-react';
 
 export default function LoginPage() {
@@ -91,9 +92,17 @@ export default function LoginPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5 pl-1">
-              Kata Sandi
-            </label>
+            <div className="flex items-center justify-between mb-1.5 pl-1">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-600">
+                Kata Sandi
+              </label>
+              <Link
+                href="/forgot-password"
+                className="text-xs font-semibold text-[#2B6153] hover:text-[#224D42] hover:underline"
+              >
+                Lupa kata sandi?
+              </Link>
+            </div>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -146,6 +155,19 @@ export default function LoginPage() {
               <span>Relawan</span>
             </button>
           </div>
+        </div>
+
+        {/* Register volunteer promotion link */}
+        <div className="mt-6 pt-4 border-t border-slate-100 text-center">
+          <p className="text-xs text-slate-500">
+            Belum memiliki akun?{' '}
+            <Link
+              href="/register"
+              className="font-bold text-[#2B6153] hover:text-[#224D42] hover:underline"
+            >
+              Daftar sebagai Relawan
+            </Link>
+          </p>
         </div>
       </div>
     </div>

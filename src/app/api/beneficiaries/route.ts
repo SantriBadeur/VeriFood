@@ -23,9 +23,23 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('sb_session')?.value;
-    const session = token ? verifySessionToken(token) : null;
+    let session = null;
+    try {
+      const cookieStore = await cookies();
+      const token = cookieStore.get('sb_session')?.value;
+      session = token ? verifySessionToken(token) : null;
+    } catch {
+      // outside request scope fallback
+    }
+
+    if (!session && req.headers) {
+      const cookieHeader = req.headers.get('cookie');
+      const match = cookieHeader?.match(/sb_session=([^;]+)/);
+      if (match) {
+        session = verifySessionToken(match[1]);
+      }
+    }
+
     const role = session?.role || 'ADMIN'; // Default fallback if called in development/tests
 
     const body = await req.json();
