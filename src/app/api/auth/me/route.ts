@@ -2,10 +2,23 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifySessionToken } from '@/lib/auth';
 
-export async function GET() {
+export async function GET(req?: Request) {
   try {
-    const cookieStore = await cookies();
-    const token = cookieStore.get('sb_session')?.value;
+    let token: string | undefined;
+    try {
+      const cookieStore = await cookies();
+      token = cookieStore.get('sb_session')?.value;
+    } catch {
+      // outside request scope fallback
+    }
+
+    if (!token && req && req.headers) {
+      const cookieHeader = req.headers.get('cookie');
+      const match = cookieHeader?.match(/sb_session=([^;]+)/);
+      if (match) {
+        token = match[1];
+      }
+    }
 
     if (!token) {
       return NextResponse.json({ error: 'Tidak terautentikasi' }, { status: 401 });
@@ -22,4 +35,3 @@ export async function GET() {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-
