@@ -9,5 +9,10 @@ describe('Database Setup & Seed', () => {
     expect(admin).not.toBeNull();
     expect(admin?.role).toBe('ADMIN');
   });
+
+  it('should have PasswordResetToken model available in Prisma client', async () => {
+    const count = await prisma.passwordResetToken.count();
+    expect(count).toBeGreaterThanOrEqual(0);
+  });
 });
 
