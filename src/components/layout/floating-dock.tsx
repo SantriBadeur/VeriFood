@@ -106,7 +106,7 @@ export function FloatingDock({
 
           <button
             onClick={toggleTheme}
-            className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-200 bg-slate-100 dark:bg-zinc-800/80 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-amber-400 hover:scale-105"
+            className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-200 bg-slate-100 dark:bg-zinc-800/80 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-amber-400 hover:scale-105 shadow-sm"
             title={`Ganti ke mode ${theme === 'light' ? 'gelap' : 'terang'}`}
           >
             {theme === 'light' ? (
@@ -116,11 +116,11 @@ export function FloatingDock({
             )}
           </button>
 
-          <div className="w-7 h-[1px] bg-slate-200 dark:bg-zinc-800 my-1" />
+          <div className="w-8 h-[1px] bg-slate-200/80 dark:bg-zinc-800 my-1.5" />
         </div>
 
         {/* Center: Module Navigation Icons */}
-        <nav className="flex flex-col items-center gap-2.5 my-auto w-full">
+        <nav className="flex flex-col items-center gap-2.5 my-auto w-full py-1">
           {navItems.map((item) => {
             const active = isItemActive(item.href);
             const Icon = item.icon;
@@ -133,7 +133,7 @@ export function FloatingDock({
                 title={item.label}
                 className={`relative group flex items-center justify-center w-11 h-11 rounded-2xl transition-all duration-200 ${
                   active
-                    ? 'bg-slate-900 text-white dark:bg-white dark:text-zinc-950 shadow-md scale-105'
+                    ? 'bg-slate-900 text-white dark:bg-white dark:text-zinc-950 shadow-md ring-2 ring-emerald-500/20 dark:ring-emerald-400/30 scale-105'
                     : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800/60'
                 }`}
               >
@@ -144,9 +144,9 @@ export function FloatingDock({
                   {item.label}
                 </span>
 
-                {/* Active indicator dot */}
+                {/* Sleek integrated active indicator dot */}
                 {active && (
-                  <span className="absolute -left-1 top-1/2 -translate-y-1/2 w-1.5 h-4 rounded-r-full bg-emerald-500 dark:bg-emerald-400" />
+                  <span className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-600" />
                 )}
               </Link>
             );
@@ -155,7 +155,7 @@ export function FloatingDock({
 
         {/* Bottom: Status & Logout */}
         <div className="flex flex-col items-center gap-2.5 w-full">
-          <div className="w-7 h-[1px] bg-slate-200 dark:bg-zinc-800 my-1" />
+          <div className="w-8 h-[1px] bg-slate-200/80 dark:bg-zinc-800 my-1.5" />
 
           {/* System Online Status Indicator */}
           <div
