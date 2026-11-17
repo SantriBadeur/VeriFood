@@ -48,7 +48,7 @@ interface TopHeaderProps {
 }
 
 export function TopHeader({ currentUser, onOpenMobile }: TopHeaderProps) {
-  const pathname = usePathname();
+  const pathname = usePathname() || '';
   const tabs = getHeaderTabs(currentUser?.role);
 
   return (

@@ -56,7 +56,7 @@ export function FloatingDock({
   mobileOpen = false,
   onCloseMobile,
 }: FloatingDockProps) {
-  const pathname = usePathname();
+  const pathname = usePathname() || '';
   const { theme, toggleTheme } = useTheme();
   const navItems = getDockNavItems(currentUser?.role);
 
