@@ -16,7 +16,7 @@ input,
 button,
 select,
 textarea {
-  font-family: 'Times New Roman', Times, serif;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 body {
