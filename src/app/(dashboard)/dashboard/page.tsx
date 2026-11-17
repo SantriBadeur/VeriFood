@@ -154,11 +154,11 @@ export default function DashboardPage() {
       </div>
 
       {/* ============================================================== */}
-      {/* 2. 3-Column Bento Grid                                         */}
+      {/* 2. Tier 1: Core Operations & Hero Metrics (5 cols + 7 cols)    */}
       {/* ============================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-stretch">
-        {/* Column 1: Hero Metric Card (4 cols) */}
-        <div className="lg:col-span-4 flex flex-col">
+        {/* Left: Hero Metric Card (5 cols) */}
+        <div className="lg:col-span-5 flex flex-col">
           <HeroMetricCard
             totalPorsi={stats.totalPorsi}
             totalKg={stats.totalKg}
@@ -169,63 +169,65 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* Column 2: 2x2 Bento Stat Cards & Recent Activities (5 cols) */}
-        <div className="lg:col-span-5 flex flex-col gap-5 sm:gap-6">
-          {/* 2x2 Bento Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Card 1: Gradient Alert for Urgent Expiry */}
-            <BentoStatCard
-              variant="gradient-urgent"
-              title="Prioritas FEFO"
-              value={stats.countMendekati}
-              subtitle="Kedaluwarsa &le; 24 jam"
-              badgeText="Salurkan Segera"
-              icon={AlertTriangle}
-              onClick={scrollToFefo}
-            />
+        {/* Right: 2x2 Bento Stat Cards (7 cols) */}
+        <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Card 1: Gradient Alert for Urgent Expiry */}
+          <BentoStatCard
+            variant="gradient-urgent"
+            title="Prioritas FEFO"
+            value={stats.countMendekati}
+            subtitle="Kedaluwarsa &le; 24 jam"
+            badgeText="Salurkan Segera"
+            icon={AlertTriangle}
+            onClick={scrollToFefo}
+          />
 
-            {/* Card 2: Safe Stock */}
-            <BentoStatCard
-              title="Stok Aman"
-              value={stats.countAman}
-              subtitle="Kondisi segar & layak"
-              icon={ShieldCheck}
-              isPositive={true}
-              change={12}
-            />
+          {/* Card 2: Safe Stock */}
+          <BentoStatCard
+            title="Stok Aman"
+            value={stats.countAman}
+            subtitle="Kondisi segar & layak"
+            icon={ShieldCheck}
+            isPositive={true}
+            change={12}
+          />
 
-            {/* Card 3: Distributed Today */}
-            <BentoStatCard
-              title="Penyaluran Hari Ini"
-              value={stats.disalurkanHariIni}
-              subtitle="Porsi terdistribusi"
-              icon={Truck}
-              isPositive={true}
-              change={18}
-            />
+          {/* Card 3: Distributed Today */}
+          <BentoStatCard
+            title="Penyaluran Hari Ini"
+            value={stats.disalurkanHariIni}
+            subtitle="Porsi terdistribusi"
+            icon={Truck}
+            isPositive={true}
+            change={18}
+          />
 
-            {/* Card 4: Active Donors */}
-            <BentoStatCard
-              title="Donatur Aktif"
-              value={stats.activeDonorsCount}
-              subtitle="Mitra bank pangan"
-              icon={Heart}
-            />
-          </div>
-
-          {/* Recent Activity Feed */}
-          <div className="flex-1">
-            <RecentActivityCard activities={recentActivities} />
-          </div>
+          {/* Card 4: Active Donors */}
+          <BentoStatCard
+            title="Donatur Aktif"
+            value={stats.activeDonorsCount}
+            subtitle="Mitra bank pangan"
+            icon={Heart}
+          />
         </div>
+      </div>
 
-        {/* Column 3: Analytic Bar Chart (3 cols) */}
-        <div className="lg:col-span-3 flex flex-col">
+      {/* ============================================================== */}
+      {/* 3. Tier 2: Logistical Analytics & Recent Activity (5 cols + 7 cols) */}
+      {/* ============================================================== */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-stretch">
+        {/* Left: Analytic Bar Chart (5 cols) */}
+        <div className="lg:col-span-5 flex flex-col">
           <AnalyticBarChart
             countAman={stats.countAman}
             countMendekati={stats.countMendekati}
             countKedaluwarsa={stats.countKedaluwarsa}
           />
+        </div>
+
+        {/* Right: Recent Distribution Activity (7 cols) */}
+        <div className="lg:col-span-7 flex flex-col">
+          <RecentActivityCard activities={recentActivities} />
         </div>
       </div>
 
