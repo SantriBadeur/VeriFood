@@ -57,14 +57,14 @@ export function HeroMetricCard({
   return (
     <motion.div
       whileHover={{ y: -3 }}
-      className="h-full flex flex-col justify-between p-6 sm:p-7 rounded-3xl bg-white dark:bg-[#15181e] border border-slate-200/80 dark:border-white/10 shadow-lg shadow-slate-900/5 dark:shadow-black/30 transition-all duration-300 relative overflow-hidden"
+      className="h-full flex flex-col justify-between p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#15181e] border border-slate-200/80 dark:border-white/10 shadow-lg shadow-slate-900/5 dark:shadow-black/30 transition-all duration-300 relative overflow-hidden"
     >
       {/* Background Decorative Gradient Radial */}
       <div className="absolute -top-24 -left-24 w-60 h-60 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
       {/* Top Header: Label & Unit Filter Pill */}
       <div>
-        <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="flex items-center justify-between gap-3 mb-2.5">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
@@ -108,23 +108,23 @@ export function HeroMetricCard({
         </div>
 
         {/* Big Counter Value */}
-        <div className="mt-3 flex items-baseline gap-2.5">
-          <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 dark:text-white font-mono">
+        <div className="mt-2.5 flex items-baseline gap-2">
+          <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 dark:text-white font-sans tabular-nums">
             {displayValue.toLocaleString('id-ID')}
           </h2>
-          <span className="text-sm sm:text-base font-bold text-slate-400 dark:text-zinc-500 capitalize">
+          <span className="text-sm sm:text-base font-semibold text-slate-500 dark:text-zinc-400">
             {selectedUnit === 'all' ? 'Porsi (Utama)' : selectedUnit}
           </span>
         </div>
 
         {/* Secondary Units Segregation Badge */}
         {secondaryUnits.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5 mt-3">
-            <span className="text-[11px] text-slate-400 dark:text-zinc-500">Satuan lain:</span>
+          <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+            <span className="text-[11px] font-medium text-slate-400 dark:text-zinc-500">Satuan lain:</span>
             {secondaryUnits.map(([u, qty]) => (
               <span
                 key={u}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-slate-100 dark:bg-zinc-800/80 text-slate-600 dark:text-zinc-300 border border-slate-200/60 dark:border-zinc-700/60"
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg text-[11px] font-semibold bg-slate-100 dark:bg-zinc-800/80 text-slate-700 dark:text-zinc-300 border border-slate-200/60 dark:border-zinc-700/60"
               >
                 <Layers className="w-3 h-3 text-emerald-500" />
                 {qty.toLocaleString('id-ID')} {u}
@@ -135,9 +135,9 @@ export function HeroMetricCard({
       </div>
 
       {/* Center: Target Progress Bar */}
-      <div className="my-6">
-        <div className="flex items-center justify-between text-xs mb-2">
-          <span className="font-semibold text-slate-600 dark:text-zinc-400">
+      <div className="my-4">
+        <div className="flex items-center justify-between text-xs mb-1.5">
+          <span className="font-semibold text-slate-700 dark:text-zinc-300">
             Target Penyelamatan Bulanan
           </span>
           <span className="font-bold text-emerald-600 dark:text-emerald-400">
@@ -155,10 +155,10 @@ export function HeroMetricCard({
       </div>
 
       {/* Bottom: Quick Action Pill Buttons */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
         <Link
           href="/makanan/masuk"
-          className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-slate-900 hover:bg-slate-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all hover:scale-[1.02]"
+          className="flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all hover:scale-[1.02]"
         >
           <PlusCircle className="w-4 h-4" />
           <span>+ Catat Pangan Masuk</span>
@@ -166,7 +166,7 @@ export function HeroMetricCard({
 
         <Link
           href="/distribusi/buat"
-          className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800/80 dark:hover:bg-zinc-700 text-slate-800 dark:text-white font-bold text-xs border border-slate-200/80 dark:border-white/10 transition-all hover:scale-[1.02]"
+          className="flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800/80 dark:hover:bg-zinc-700 text-slate-800 dark:text-white font-bold text-xs border border-slate-200/80 dark:border-white/10 transition-all hover:scale-[1.02]"
         >
           <CalendarPlus className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           <span>Jadwalkan Distribusi</span>
