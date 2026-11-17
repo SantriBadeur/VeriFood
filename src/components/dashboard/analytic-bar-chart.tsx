@@ -52,29 +52,29 @@ export function AnalyticBarChart({
   return (
     <motion.div
       whileHover={{ y: -3 }}
-      className="h-full flex flex-col justify-between p-6 sm:p-7 rounded-3xl bg-white dark:bg-[#15181e] border border-slate-200/80 dark:border-white/10 shadow-lg shadow-slate-900/5 dark:shadow-black/30 transition-all duration-300"
+      className="h-full flex flex-col justify-between p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#15181e] border border-slate-200/80 dark:border-white/10 shadow-lg shadow-slate-900/5 dark:shadow-black/30 transition-all duration-300"
     >
       {/* Header & Range Switcher */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400">
+        <div className="flex items-center justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 shrink-0">
               <BarChart3 className="w-4 h-4" />
             </div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+            <div className="min-w-0">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white whitespace-nowrap">
                 Tren Logistik Pangan
               </h3>
-              <p className="text-[11px] text-slate-400 dark:text-zinc-500 font-medium">
+              <p className="text-[11px] text-slate-400 dark:text-zinc-500 font-medium whitespace-nowrap">
                 Penyelamatan vs Penyaluran
               </p>
             </div>
           </div>
 
-          <div className="flex items-center p-0.5 rounded-xl bg-slate-100 dark:bg-zinc-800 text-[11px] font-semibold border border-slate-200/60 dark:border-zinc-700/60">
+          <div className="flex items-center p-0.5 rounded-xl bg-slate-100 dark:bg-zinc-800 text-[11px] font-semibold border border-slate-200/60 dark:border-zinc-700/60 shrink-0">
             <button
               onClick={() => setActiveTab('week')}
-              className={`px-2 py-0.5 rounded-lg transition-all ${
+              className={`px-2.5 py-0.5 rounded-lg transition-all ${
                 activeTab === 'week'
                   ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-sm font-bold'
                   : 'text-slate-500 dark:text-zinc-400'
@@ -84,7 +84,7 @@ export function AnalyticBarChart({
             </button>
             <button
               onClick={() => setActiveTab('month')}
-              className={`px-2 py-0.5 rounded-lg transition-all ${
+              className={`px-2.5 py-0.5 rounded-lg transition-all ${
                 activeTab === 'month'
                   ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-sm font-bold'
                   : 'text-slate-500 dark:text-zinc-400'
@@ -94,7 +94,7 @@ export function AnalyticBarChart({
             </button>
             <button
               onClick={() => setActiveTab('year')}
-              className={`px-2 py-0.5 rounded-lg transition-all ${
+              className={`px-2.5 py-0.5 rounded-lg transition-all ${
                 activeTab === 'year'
                   ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-sm font-bold'
                   : 'text-slate-500 dark:text-zinc-400'
@@ -106,19 +106,19 @@ export function AnalyticBarChart({
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-4 text-[11px] font-semibold mb-4 text-slate-500 dark:text-zinc-400">
+        <div className="flex items-center gap-4 text-[11px] font-semibold mb-3 text-slate-500 dark:text-zinc-400">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
             <span>Masuk</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-slate-900 dark:bg-white" />
+            <span className="w-2.5 h-2.5 rounded-full bg-slate-700 dark:bg-emerald-200/90" />
             <span>Disalurkan</span>
           </div>
         </div>
 
         {/* Vertical Rounded Bars */}
-        <div className="h-40 flex items-end justify-between gap-2 pt-4 px-1 border-b border-slate-100 dark:border-zinc-800">
+        <div className="h-40 flex items-end justify-between gap-1.5 pt-3 px-3 sm:px-4 border-b border-slate-100 dark:border-zinc-800">
           {chartData.map((d) => {
             const heightRescued = Math.round((d.rescued / maxVal) * 100);
             const heightDistributed = Math.round((d.distributed / maxVal) * 100);
@@ -131,7 +131,7 @@ export function AnalyticBarChart({
                     initial={{ height: 0 }}
                     animate={{ height: `${heightRescued}%` }}
                     transition={{ duration: 0.6, ease: 'easeOut' }}
-                    className="w-2.5 sm:w-3 bg-emerald-500 rounded-t-lg transition-colors group-hover:bg-emerald-400"
+                    className="w-2.5 sm:w-3.5 bg-emerald-500 rounded-t-lg transition-colors group-hover:bg-emerald-400"
                     title={`Masuk: ${d.rescued}`}
                   />
                   {/* Distributed bar */}
@@ -139,11 +139,11 @@ export function AnalyticBarChart({
                     initial={{ height: 0 }}
                     animate={{ height: `${heightDistributed}%` }}
                     transition={{ duration: 0.6, ease: 'easeOut' }}
-                    className="w-2.5 sm:w-3 bg-slate-800 dark:bg-white rounded-t-lg transition-colors group-hover:bg-slate-700 dark:group-hover:bg-zinc-200"
+                    className="w-2.5 sm:w-3.5 bg-slate-700 dark:bg-emerald-200/90 rounded-t-lg transition-colors group-hover:bg-slate-600 dark:group-hover:bg-emerald-100"
                     title={`Disalurkan: ${d.distributed}`}
                   />
                 </div>
-                <span className="text-[10px] font-semibold text-slate-400 dark:text-zinc-500 mt-1">
+                <span className="text-[10px] font-semibold text-slate-400 dark:text-zinc-500 mt-1.5">
                   {d.label}
                 </span>
               </div>
@@ -153,12 +153,12 @@ export function AnalyticBarChart({
       </div>
 
       {/* Bottom: Food Safety Status Distribution */}
-      <div className="mt-5 pt-3">
-        <div className="flex items-center justify-between text-xs font-semibold mb-2">
+      <div className="mt-4 pt-2">
+        <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
           <span className="text-slate-700 dark:text-zinc-300">
             Distribusi Keamanan FEFO
           </span>
-          <span className="text-[11px] text-slate-400 dark:text-zinc-500">
+          <span className="text-[11px] text-slate-400 dark:text-zinc-500 font-medium">
             {countAman + countMendekati + countKedaluwarsa} Batch
           </span>
         </div>
@@ -171,7 +171,7 @@ export function AnalyticBarChart({
         </div>
 
         {/* Status Breakdown Pills */}
-        <div className="grid grid-cols-3 gap-1.5 mt-3 text-center">
+        <div className="grid grid-cols-3 gap-1.5 mt-2.5 text-center">
           <div className="p-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400">
             <span className="text-[10px] block font-medium">Aman</span>
             <span className="text-xs font-extrabold">{countAman}</span>
