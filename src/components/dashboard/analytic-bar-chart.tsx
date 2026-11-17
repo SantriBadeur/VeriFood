@@ -52,7 +52,7 @@ export function AnalyticBarChart({
   return (
     <motion.div
       whileHover={{ y: -3 }}
-      className="h-full flex flex-col justify-between p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#15181e] border border-slate-200/80 dark:border-white/10 shadow-lg shadow-slate-900/5 dark:shadow-black/30 transition-all duration-300"
+      className="h-full flex flex-col p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#15181e] border border-slate-200/80 dark:border-white/10 shadow-lg shadow-slate-900/5 dark:shadow-black/30 transition-all duration-300"
     >
       {/* Header & Range Switcher */}
       <div>
@@ -117,8 +117,8 @@ export function AnalyticBarChart({
           </div>
         </div>
 
-        {/* Vertical Rounded Bars */}
-        <div className="h-40 flex items-end justify-between gap-1.5 pt-3 px-3 sm:px-4 border-b border-slate-100 dark:border-zinc-800">
+        {/* Vertical Rounded Bars - Height enhanced to h-52 for solid presence */}
+        <div className="h-48 sm:h-52 flex items-end justify-between gap-1.5 pt-3 px-3 sm:px-4 border-b border-slate-100 dark:border-zinc-800">
           {chartData.map((d) => {
             const heightRescued = Math.round((d.rescued / maxVal) * 100);
             const heightDistributed = Math.round((d.distributed / maxVal) * 100);
@@ -152,8 +152,8 @@ export function AnalyticBarChart({
         </div>
       </div>
 
-      {/* Bottom: Food Safety Status Distribution */}
-      <div className="mt-4 pt-2">
+      {/* Bottom: Food Safety Status Distribution (Naturally positioned with mt-auto pt-4) */}
+      <div className="mt-auto pt-4">
         <div className="flex items-center justify-between text-xs font-semibold mb-1.5">
           <span className="text-slate-700 dark:text-zinc-300">
             Distribusi Keamanan FEFO

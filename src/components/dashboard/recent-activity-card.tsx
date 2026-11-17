@@ -103,7 +103,7 @@ export function RecentActivityCard({ activities }: RecentActivityCardProps) {
       </div>
 
       {/* Activity Table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto max-h-[310px] overflow-y-auto pr-1">
         <table className="w-full text-left border-collapse text-xs">
           <thead>
             <tr className="border-b border-slate-100 dark:border-zinc-800 text-slate-400 dark:text-zinc-500 font-semibold uppercase tracking-wider text-[10px]">
