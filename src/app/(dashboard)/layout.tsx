@@ -133,7 +133,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     .filter((group) => group.items.length > 0);
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#EBF7F3] p-2 sm:p-3 lg:p-4 flex flex-col font-sans antialiased">
+    <div className="h-screen w-screen overflow-hidden bg-[#EBF7F3] p-2 sm:p-3 lg:p-4 flex flex-col font-serif antialiased">
       {/* Mobile Backdrop */}
       {sidebarOpen && (
         <div

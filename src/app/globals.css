@@ -10,10 +10,18 @@
   --sage-accent: #f4b942;
 }
 
+html,
+body,
+input,
+button,
+select,
+textarea {
+  font-family: 'Times New Roman', Times, serif;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   overflow-x: hidden;
 }
 
