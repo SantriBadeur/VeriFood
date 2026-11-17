@@ -2,22 +2,23 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import {
   PackagePlus,
   Truck,
-  Boxes,
-  ArrowUpRight,
-  Clock,
   ShieldCheck,
   AlertTriangle,
-  ChevronDown,
-  Sparkles,
-  ArrowRight,
-  TrendingUp,
   Heart,
-  Calendar,
-  CheckCircle2,
+  ArrowUpRight,
+  Search,
+  Filter,
+  Sparkles,
 } from 'lucide-react';
+import { useCurrentUser } from '@/lib/user-context';
+import { HeroMetricCard } from '@/components/dashboard/hero-metric-card';
+import { BentoStatCard } from '@/components/dashboard/bento-stat-card';
+import { AnalyticBarChart } from '@/components/dashboard/analytic-bar-chart';
+import { RecentActivityCard, RecentActivityItem } from '@/components/dashboard/recent-activity-card';
 
 interface FoodItem {
   id: string;
@@ -35,519 +36,320 @@ interface FoodItem {
   };
 }
 
+interface DashboardStats {
+  totalPorsi: number;
+  totalKg: number;
+  unitBreakdown: Record<string, number>;
+  countAman: number;
+  countMendekati: number;
+  countKedaluwarsa: number;
+  disalurkanHariIni: number;
+  activeDonorsCount: number;
+  recentDistributions: any[];
+}
+
 export default function DashboardPage() {
-  const [items, setItems] = useState<FoodItem[]>([]);
+  const currentUser = useCurrentUser();
+  const [fefoItems, setFefoItems] = useState<FoodItem[]>([]);
+  const [stats, setStats] = useState<DashboardStats>({
+    totalPorsi: 0,
+    totalKg: 0,
+    unitBreakdown: {},
+    countAman: 0,
+    countMendekati: 0,
+    countKedaluwarsa: 0,
+    disalurkanHariIni: 0,
+    activeDonorsCount: 0,
+    recentDistributions: [],
+  });
   const [loading, setLoading] = useState(true);
-  const [chartTab, setChartTab] = useState<'week' | 'month' | 'year'>('week');
+  const [selectedUnit, setSelectedUnit] = useState<'porsi' | 'kg' | 'all'>('porsi');
+  const [fefoSearch, setFefoSearch] = useState('');
+  const [fefoFilter, setFefoFilter] = useState<'ALL' | 'AMAN' | 'MENDEKATI_KEDALUWARSA' | 'KEDALUWARSA'>('ALL');
 
   useEffect(() => {
-    fetch('/api/food/fefo')
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data) => setItems(data))
-      .catch(() => setItems([]))
+    Promise.all([
+      fetch('/api/dashboard/stats').then((res) => (res.ok ? res.json() : null)),
+      fetch('/api/food/fefo').then((res) => (res.ok ? res.json() : [])),
+    ])
+      .then(([statsData, fefoData]) => {
+        if (statsData) setStats(statsData);
+        if (Array.isArray(fefoData)) setFefoItems(fefoData);
+      })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  const countAman = items.filter((i) => i.evaluation.status === 'AMAN').length;
-  const countMendekati = items.filter((i) => i.evaluation.status === 'MENDEKATI_KEDALUWARSA').length;
-  const countKedaluwarsa = items.filter((i) => i.evaluation.status === 'KEDALUWARSA').length;
-  const totalStokPorsi = items.reduce((acc, curr) => acc + curr.remainingQuantity, 0);
+  // Time-aware greeting
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 11) return 'Selamat Pagi';
+    if (hour < 15) return 'Selamat Siang';
+    if (hour < 18) return 'Selamat Sore';
+    return 'Selamat Malam';
+  };
+
+  // Map recent distributions to RecentActivityItem
+  const recentActivities: RecentActivityItem[] = (stats.recentDistributions || []).map((dist: any) => {
+    const itemsSummary = dist.items
+      ?.map((i: any) => `${i.foodStock?.name || 'Makanan'} (${i.quantity} ${i.foodStock?.unit || ''})`)
+      .join(', ') || 'Paket Bantuan';
+    const totalQuantity = dist.items?.reduce((acc: number, curr: any) => acc + curr.quantity, 0) || 0;
+
+    return {
+      id: dist.id,
+      recipientName: dist.beneficiary?.name || 'Penerima Manfaat',
+      driverName: dist.driverName || undefined,
+      status: dist.status,
+      scheduledDate: dist.scheduledDate,
+      itemsSummary,
+      totalQuantity,
+    };
+  });
+
+  const scrollToFefo = () => {
+    const el = document.getElementById('antrean-fefo');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // Filter FEFO queue
+  const filteredFefo = fefoItems.filter((item) => {
+    const matchesSearch =
+      item.name.toLowerCase().includes(fefoSearch.toLowerCase()) ||
+      item.donor.name.toLowerCase().includes(fefoSearch.toLowerCase());
+    const matchesStatus = fefoFilter === 'ALL' || item.evaluation.status === fefoFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-500">
       {/* ============================================================== */}
-      {/* ROW 1: Hero Card ("My cards"), Quick Actions, & Wave Trend Card */}
+      {/* 1. Dynamic Welcome Banner                                      */}
       {/* ============================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-        {/* Hero Card & Balance (Left - 5 Cols) */}
-        <div className="lg:col-span-5 bg-white p-5 sm:p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-bold text-slate-800 tracking-tight">Stok Pangan Aktif</h2>
-            <Link
-              href="/makanan/masuk"
-              className="inline-flex items-center gap-1 text-xs font-semibold text-[#2B6153] hover:text-[#1e443a] transition"
-            >
-              Tambah baru <span className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center text-xs">+</span>
-            </Link>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+              {getGreeting()}, {currentUser?.name?.split(' ')[0] || 'Relawan'}
+            </h1>
+            <Sparkles className="w-5 h-5 text-amber-500 animate-pulse" />
           </div>
-
-          <div className="flex flex-col sm:flex-row items-center gap-5">
-            {/* The Stylized Food Rescue Card (Matches reference VISA card) */}
-            <div className="w-full sm:w-56 h-36 rounded-2xl bg-gradient-to-tr from-[#245246] via-[#2F6758] to-[#3d8370] p-4 text-white shadow-lg shadow-[#2B6153]/25 flex flex-col justify-between relative overflow-hidden shrink-0">
-              {/* Background waves effect */}
-              <div className="absolute inset-0 opacity-15 pointer-events-none">
-                <svg viewBox="0 0 200 200" className="w-full h-full" preserveAspectRatio="none">
-                  <path d="M0,100 C40,160 120,40 200,100 L200,200 L0,200 Z" fill="#ffffff" />
-                </svg>
-              </div>
-
-              <div className="flex items-center justify-between relative z-10">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-[#F4B942]" />
-                  <span className="text-[10px] font-semibold tracking-wider uppercase text-emerald-100">
-                    Food Bank
-                  </span>
-                </div>
-                <span className="text-xs font-black tracking-widest text-[#F4B942]">FEFO</span>
-              </div>
-
-              <div className="relative z-10">
-                <p className="text-[11px] text-emerald-200 tracking-widest font-mono">2026 • 8492 • 1024</p>
-              </div>
-
-              <div className="flex items-center justify-between text-[10px] text-emerald-100 relative z-10">
-                <span>SisaBerkah System</span>
-                <span className="font-semibold text-white">READY</span>
-              </div>
-            </div>
-
-            {/* Total Balance / Porsi Metrics */}
-            <div className="flex-1 w-full flex flex-col justify-center">
-              <span className="text-xs font-medium text-slate-400">Total Stok Tersedia</span>
-              <div className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight mt-1">
-                {totalStokPorsi > 0 ? totalStokPorsi.toLocaleString('id-ID') : '1.450'}{' '}
-                <span className="text-sm font-semibold text-slate-500">Porsi</span>
-              </div>
-              <a
-                href="#tabel-fefo"
-                className="inline-flex items-center gap-1 text-xs font-bold text-[#2B6153] mt-2 hover:gap-2 transition-all"
-              >
-                <span>Lihat antrean FEFO</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </a>
-            </div>
-          </div>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-1 font-medium">
+            Pantau stok pangan masuk, prioritas FEFO, dan jadwal distribusi secara realtime.
+          </p>
         </div>
 
-        {/* Quick Action Pill Buttons (Center - 3 Cols) */}
-        <div className="lg:col-span-3 bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
-          <p className="text-xs font-semibold text-slate-400 mb-3">Aksi Cepat Operasional</p>
-          <div className="grid grid-cols-3 gap-2">
-            <Link
-              href="/makanan/masuk"
-              className="flex flex-col items-center justify-center p-3 rounded-2xl bg-slate-50/80 hover:bg-emerald-50/70 border border-slate-100 transition group text-center"
-            >
-              <div className="w-9 h-9 rounded-full bg-emerald-100 text-[#2B6153] flex items-center justify-center mb-1.5 group-hover:scale-110 transition">
-                <PackagePlus className="w-4 h-4" />
-              </div>
-              <span className="text-[11px] font-semibold text-slate-700">Catat</span>
-            </Link>
-
-            <Link
-              href="/distribusi/buat"
-              className="flex flex-col items-center justify-center p-3 rounded-2xl bg-slate-50/80 hover:bg-emerald-50/70 border border-slate-100 transition group text-center"
-            >
-              <div className="w-9 h-9 rounded-full bg-emerald-100 text-[#2B6153] flex items-center justify-center mb-1.5 group-hover:scale-110 transition">
-                <Truck className="w-4 h-4" />
-              </div>
-              <span className="text-[11px] font-semibold text-slate-700">Salur</span>
-            </Link>
-
-            <Link
-              href="/makanan/kelola"
-              className="flex flex-col items-center justify-center p-3 rounded-2xl bg-slate-50/80 hover:bg-emerald-50/70 border border-slate-100 transition group text-center"
-            >
-              <div className="w-9 h-9 rounded-full bg-emerald-100 text-[#2B6153] flex items-center justify-center mb-1.5 group-hover:scale-110 transition">
-                <Boxes className="w-4 h-4" />
-              </div>
-              <span className="text-[11px] font-semibold text-slate-700">Kelola</span>
-            </Link>
-          </div>
-          <div className="mt-3 pt-3 border-t border-slate-100 text-[11px] text-slate-400 text-center">
-            {countMendekati > 0 ? (
-              <span className="text-amber-600 font-semibold">⚠️ {countMendekati} batch mendekati expired</span>
-            ) : (
-              <span className="text-emerald-600 font-medium">✓ Seluruh batch dalam masa aman</span>
-            )}
-          </div>
-        </div>
-
-        {/* Profit / Trend Wave Chart (Right - 4 Cols) */}
-        <div className="lg:col-span-4 bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-bold text-slate-800">Efisiensi Penyelamatan</h3>
-            <div className="flex items-center gap-1 bg-slate-100/70 p-1 rounded-full text-[10px] font-semibold text-slate-600">
-              <button
-                onClick={() => setChartTab('week')}
-                className={`px-2 py-0.5 rounded-full transition ${chartTab === 'week' ? 'bg-white text-slate-900 shadow-xs' : ''}`}
-              >
-                Week
-              </button>
-              <button
-                onClick={() => setChartTab('month')}
-                className={`px-2 py-0.5 rounded-full transition ${chartTab === 'month' ? 'bg-white text-slate-900 shadow-xs' : ''}`}
-              >
-                Month
-              </button>
-              <button
-                onClick={() => setChartTab('year')}
-                className={`px-2 py-0.5 rounded-full transition ${chartTab === 'year' ? 'bg-white text-slate-900 shadow-xs' : ''}`}
-              >
-                Year
-              </button>
-            </div>
-          </div>
-
-          {/* Smooth Green SVG Wave Curve (Matches reference "Profit" chart) */}
-          <div className="w-full h-24 my-2">
-            <svg viewBox="0 0 300 80" className="w-full h-full overflow-visible">
-              <defs>
-                <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#2B6153" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#2B6153" stopOpacity="0.0" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M0,55 C40,65 70,30 110,40 C150,50 180,60 220,35 C250,20 280,15 300,10 L300,80 L0,80 Z"
-                fill="url(#profitGradient)"
-              />
-              <path
-                d="M0,55 C40,65 70,30 110,40 C150,50 180,60 220,35 C250,20 280,15 300,10"
-                fill="none"
-                stroke="#2B6153"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-              />
-              <circle cx="300" cy="10" r="3.5" fill="#2B6153" />
-            </svg>
-          </div>
-
-          <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-100">
-            <span>Sen</span>
-            <span>Sel</span>
-            <span>Rab</span>
-            <span>Kam</span>
-            <span>Jum</span>
-            <span>Sab</span>
-            <span className="font-bold text-[#2B6153]">Min</span>
-          </div>
+        {/* Quick Shortcut Buttons */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={scrollToFefo}
+            className="px-3.5 py-2 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800/40 text-amber-700 dark:text-amber-300 text-xs font-bold hover:scale-105 transition-all flex items-center gap-1.5"
+          >
+            <AlertTriangle className="w-4 h-4 text-amber-600" />
+            <span>{stats.countMendekati} Prioritas FEFO</span>
+          </button>
         </div>
       </div>
 
       {/* ============================================================== */}
-      {/* ROW 2: Income/Expense Wave Cards & Dual-Tone Spending Statistic */}
+      {/* 2. 3-Column Bento Grid                                         */}
       {/* ============================================================== */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 items-stretch">
-        {/* Income Card (Matches reference "Income" +$4,465.00) - 3 Cols */}
-        <div className="lg:col-span-3 bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-emerald-100 text-[#2B6153] flex items-center justify-center">
-                <PackagePlus className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-bold text-slate-700">Donasi Masuk</span>
-            </div>
-            <span className="text-slate-300">•••</span>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-stretch">
+        {/* Column 1: Hero Metric Card (4 cols) */}
+        <div className="lg:col-span-4 flex flex-col">
+          <HeroMetricCard
+            totalPorsi={stats.totalPorsi}
+            totalKg={stats.totalKg}
+            unitBreakdown={stats.unitBreakdown}
+            selectedUnit={selectedUnit}
+            onSelectUnit={setSelectedUnit}
+            monthlyGoal={2500}
+          />
+        </div>
+
+        {/* Column 2: 2x2 Bento Stat Cards & Recent Activities (5 cols) */}
+        <div className="lg:col-span-5 flex flex-col gap-5 sm:gap-6">
+          {/* 2x2 Bento Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Card 1: Gradient Alert for Urgent Expiry */}
+            <BentoStatCard
+              variant="gradient-urgent"
+              title="Prioritas FEFO"
+              value={stats.countMendekati}
+              subtitle="Kedaluwarsa &le; 24 jam"
+              badgeText="Salurkan Segera"
+              icon={AlertTriangle}
+              onClick={scrollToFefo}
+            />
+
+            {/* Card 2: Safe Stock */}
+            <BentoStatCard
+              title="Stok Aman"
+              value={stats.countAman}
+              subtitle="Kondisi segar & layak"
+              icon={ShieldCheck}
+              isPositive={true}
+              change={12}
+            />
+
+            {/* Card 3: Distributed Today */}
+            <BentoStatCard
+              title="Penyaluran Hari Ini"
+              value={stats.disalurkanHariIni}
+              subtitle="Porsi terdistribusi"
+              icon={Truck}
+              isPositive={true}
+              change={18}
+            />
+
+            {/* Card 4: Active Donors */}
+            <BentoStatCard
+              title="Donatur Aktif"
+              value={stats.activeDonorsCount}
+              subtitle="Mitra bank pangan"
+              icon={Heart}
+            />
           </div>
 
-          {/* Smooth wave line */}
-          <div className="w-full h-12 my-3">
-            <svg viewBox="0 0 200 40" className="w-full h-full" preserveAspectRatio="none">
-              <path
-                d="M0,30 C30,35 60,10 90,20 C120,30 150,5 200,15"
-                fill="none"
-                stroke="#2B6153"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <span className="text-xl font-black text-slate-800">+1.450 <span className="text-xs font-normal text-slate-400">Porsi</span></span>
-            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-              +18% ↑
-            </span>
+          {/* Recent Activity Feed */}
+          <div className="flex-1">
+            <RecentActivityCard activities={recentActivities} />
           </div>
         </div>
 
-        {/* Expenses Card (Matches reference "Expences" -$2,465.00) - 3 Cols */}
-        <div className="lg:col-span-3 bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-800 flex items-center justify-center">
-                <Truck className="w-4 h-4" />
-              </div>
-              <span className="text-xs font-bold text-slate-700">Tersalurkan</span>
-            </div>
-            <span className="text-slate-300">•••</span>
-          </div>
-
-          {/* Smooth wave line */}
-          <div className="w-full h-12 my-3">
-            <svg viewBox="0 0 200 40" className="w-full h-full" preserveAspectRatio="none">
-              <path
-                d="M0,20 C40,5 80,35 120,20 C160,10 180,30 200,25"
-                fill="none"
-                stroke="#3B8272"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <span className="text-xl font-black text-slate-800">1.120 <span className="text-xs font-normal text-slate-400">Porsi</span></span>
-            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">
-              82% Rasio
-            </span>
-          </div>
-        </div>
-
-        {/* Spendings Statistic Dual-Tone Bar Chart (Matches reference 6 Cols) */}
-        <div className="lg:col-span-6 bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-full bg-emerald-100 text-[#2B6153] flex items-center justify-center">
-                <TrendingUp className="w-3.5 h-3.5" />
-              </div>
-              <h3 className="text-sm font-bold text-slate-800">Statistik Penyelamatan Bulanan</h3>
-            </div>
-            <div className="flex items-center gap-1 text-xs text-slate-500 font-semibold bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/60">
-              <span>Tahun 2026</span>
-              <ChevronDown className="w-3.5 h-3.5" />
-            </div>
-          </div>
-
-          {/* Dual-color pill bars matching reference image (Yellow and soft mint background bars) */}
-          <div className="grid grid-cols-11 gap-2 items-end h-24 my-2 px-1">
-            {[
-              { m: 'Jan', h: 45, y: 30 },
-              { m: 'Feb', h: 65, y: 50 },
-              { m: 'Mar', h: 80, y: 70 },
-              { m: 'Apr', h: 90, y: 85 },
-              { m: 'Mei', h: 50, y: 35 },
-              { m: 'Jun', h: 75, y: 60 },
-              { m: 'Jul', h: 40, y: 25 },
-              { m: 'Agu', h: 60, y: 45 },
-              { m: 'Sep', h: 70, y: 55 },
-              { m: 'Okt', h: 85, y: 70 },
-              { m: 'Nov', h: 95, y: 80 },
-            ].map((bar, idx) => (
-              <div key={idx} className="flex flex-col items-center gap-1.5 h-full justify-end">
-                <div className="w-full max-w-[14px] bg-[#E8F6F1] rounded-full h-full flex flex-col justify-end overflow-hidden relative">
-                  {/* Yellow pill fill matching reference */}
-                  <div
-                    className="w-full bg-[#F4B942] rounded-full transition-all duration-500"
-                    style={{ height: `${bar.y}%` }}
-                  />
-                </div>
-                <span className="text-[9px] font-semibold text-slate-400">{bar.m}</span>
-              </div>
-            ))}
-          </div>
+        {/* Column 3: Analytic Bar Chart (3 cols) */}
+        <div className="lg:col-span-3 flex flex-col">
+          <AnalyticBarChart
+            countAman={stats.countAman}
+            countMendekati={stats.countMendekati}
+            countKedaluwarsa={stats.countKedaluwarsa}
+          />
         </div>
       </div>
 
       {/* ============================================================== */}
-      {/* ROW 3: Planning Progress, Latest Transactions, & Callout Card  */}
+      {/* 3. Antrean Prioritas FEFO (Interactive Table)                  */}
       {/* ============================================================== */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 items-stretch">
-        {/* Planning Section (Matches reference "Planning") - 4 Cols */}
-        <div className="lg:col-span-4 bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-bold text-slate-800">Target Distribusi Sasaran</h3>
-            <Link href="/penerima" className="text-xs font-semibold text-[#2B6153]">
-              Kelola +
-            </Link>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between text-xs font-medium mb-1">
-                <span className="text-slate-700 font-semibold">Panti Asuhan Kasih Bunda</span>
-                <span className="text-slate-400 text-[11px]">350 / 500 Porsi</span>
-              </div>
-              <div className="w-full h-2.5 bg-[#E8F6F1] rounded-full overflow-hidden">
-                <div className="h-full bg-[#F4B942] rounded-full w-[70%]" />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between text-xs font-medium mb-1">
-                <span className="text-slate-700 font-semibold">Komunitas Kaum Dhuafa</span>
-                <span className="text-slate-400 text-[11px]">620 / 700 Porsi</span>
-              </div>
-              <div className="w-full h-2.5 bg-[#E8F6F1] rounded-full overflow-hidden">
-                <div className="h-full bg-[#2B6153] rounded-full w-[88%]" />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex justify-between text-xs font-medium mb-1">
-                <span className="text-slate-700 font-semibold">Keluarga Prasejahtera Sukamaju</span>
-                <span className="text-slate-400 text-[11px]">180 / 200 Porsi</span>
-              </div>
-              <div className="w-full h-2.5 bg-[#E8F6F1] rounded-full overflow-hidden">
-                <div className="h-full bg-[#F4B942] rounded-full w-[90%]" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Latest Activity Feed (Matches reference "Latest transactions") - 5 Cols */}
-        <div className="lg:col-span-5 bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-bold text-slate-800">Aktivitas Penyelamatan Terkini</h3>
-            <span className="text-xs text-slate-400">Hari ini</span>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-emerald-100 text-[#2B6153] flex items-center justify-center font-bold text-xs">
-                  R
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-800">Restoran Sedap Rasa</p>
-                  <p className="text-[10px] text-slate-400">Nasi Kotak Ayam Panggang • 50 porsi</p>
-                </div>
-              </div>
-              <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
-                Diterima
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-xs">
-                  B
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-800">Bakery Lestari Jaya</p>
-                  <p className="text-[10px] text-slate-400">Roti Gandum Manis • 120 pack</p>
-                </div>
-              </div>
-              <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full">
-                Mendekati FEFO
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center font-bold text-xs">
-                  K
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-800">Katering Barokah</p>
-                  <p className="text-[10px] text-slate-400">Sayur Lodeh & Tempe Bacem • 40 porsi</p>
-                </div>
-              </div>
-              <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">
-                Terjadwal
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Callout Card (Matches reference "Go premium" section) - 3 Cols */}
-        <div className="lg:col-span-3 bg-gradient-to-br from-[#2B6153] to-[#20493e] text-white p-5 rounded-3xl shadow-md shadow-[#2B6153]/20 flex flex-col justify-between relative overflow-hidden">
+      <div
+        id="antrean-fefo"
+        className="p-6 sm:p-7 rounded-3xl bg-white dark:bg-[#15181e] border border-slate-200/80 dark:border-white/10 shadow-lg shadow-slate-900/5 dark:shadow-black/30 transition-all"
+      >
+        {/* Table Header with Search & Badge Counters */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100 dark:border-zinc-800">
           <div>
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-bold tracking-tight text-white">Misi Zero Waste</h3>
-              <Sparkles className="w-4 h-4 text-[#F4B942]" />
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                Antrean Prioritas FEFO (First Expired, First Out)
+              </h2>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400">
+                Live Invariant
+              </span>
             </div>
-            <p className="text-xs text-emerald-100/90 leading-relaxed mt-1">
-              Setiap porsi makanan terselamatkan adalah senyuman dan berkah bagi sesama serta bumi kita.
+            <p className="text-xs text-slate-400 dark:text-zinc-500 font-medium mt-1">
+              Urutan batch makanan aktif yang wajib didistribusikan lebih dulu berdasarkan tanggal kedaluwarsa.
             </p>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-emerald-600/50 flex items-center justify-between">
-            <span className="text-[11px] font-medium text-emerald-200">FEFO Engine 2.0</span>
-            <Link
-              href="/laporan"
-              className="px-3 py-1.5 rounded-xl bg-white text-[#2B6153] text-xs font-bold hover:bg-[#F4B942] hover:text-slate-900 transition shadow-sm"
+          {/* Search & Filter Controls */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={fefoSearch}
+                onChange={(e) => setFefoSearch(e.target.value)}
+                placeholder="Cari nama makanan / donatur..."
+                className="pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-xs text-slate-800 dark:text-zinc-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 w-48 sm:w-56"
+              />
+            </div>
+
+            <select
+              value={fefoFilter}
+              onChange={(e) => setFefoFilter(e.target.value as any)}
+              className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-xs font-semibold text-slate-700 dark:text-zinc-300 focus:outline-none"
             >
-              Lihat Dampak
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* ============================================================== */}
-      {/* ROW 4: Real-Time FEFO Prioritized Inventory Table              */}
-      {/* ============================================================== */}
-      <div id="tabel-fefo" className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden p-5 sm:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
-          <div>
-            <h2 className="text-base font-bold text-slate-800">Antrean Prioritas FEFO (First Expired, First Out)</h2>
-            <p className="text-xs text-slate-400">
-              Urutan batch makanan aktif yang wajib disalurkan terlebih dahulu.
-            </p>
-          </div>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="flex items-center gap-1 font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
-              🟢 {countAman} Aman
-            </span>
-            <span className="flex items-center gap-1 font-semibold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full">
-              🟡 {countMendekati} Prioritas Segera
-            </span>
-            {countKedaluwarsa > 0 && (
-              <span className="flex items-center gap-1 font-semibold text-red-700 bg-red-50 px-2.5 py-1 rounded-full">
-                🔴 {countKedaluwarsa} Kedaluwarsa
-              </span>
-            )}
+              <option value="ALL">Semua Status</option>
+              <option value="AMAN">🟢 Aman</option>
+              <option value="MENDEKATI_KEDALUWARSA">🟡 Prioritas (&le; 24 Jam)</option>
+              <option value="KEDALUWARSA">🔴 Kedaluwarsa</option>
+            </select>
           </div>
         </div>
 
+        {/* Table Content */}
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-600">
-            <thead className="bg-slate-50/70 text-[11px] uppercase tracking-wider text-slate-500 font-semibold border-b border-slate-100">
-              <tr>
-                <th className="px-5 py-3.5">Nama Makanan</th>
-                <th className="px-5 py-3.5">Mitra Donatur</th>
-                <th className="px-5 py-3.5">Sisa Stok</th>
-                <th className="px-5 py-3.5">Batas Kedaluwarsa</th>
-                <th className="px-5 py-3.5">Status FEFO</th>
-                <th className="px-5 py-3.5 text-right">Aksi</th>
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="border-b border-slate-100 dark:border-zinc-800 text-[10px] uppercase font-bold text-slate-400 dark:text-zinc-500 tracking-wider">
+                <th className="pb-3 pl-1">Nama Makanan</th>
+                <th className="pb-3">Mitra Donatur</th>
+                <th className="pb-3">Sisa Stok</th>
+                <th className="pb-3">Batas Kedaluwarsa</th>
+                <th className="pb-3">Status FEFO</th>
+                <th className="pb-3 text-right pr-1">Tindakan</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60 font-medium">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-slate-400">
-                    Memuat data antrean FEFO...
+                  <td colSpan={6} className="py-10 text-center text-slate-400 dark:text-zinc-500">
+                    Memuat antrean stok FEFO...
                   </td>
                 </tr>
-              ) : items.length === 0 ? (
+              ) : filteredFefo.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-slate-400">
-                    Belum ada stok makanan aktif yang terdaftar.
+                  <td colSpan={6} className="py-10 text-center text-slate-400 dark:text-zinc-500">
+                    Tidak ada stok makanan aktif yang sesuai filter.
                   </td>
                 </tr>
               ) : (
-                items.map((item) => (
-                  <tr key={item.id} className="hover:bg-slate-50/70 transition">
-                    <td className="px-5 py-4 font-semibold text-slate-900">{item.name}</td>
-                    <td className="px-5 py-4 text-slate-600">{item.donor.name}</td>
-                    <td className="px-5 py-4 font-bold text-slate-800">
-                      {item.remainingQuantity} <span className="font-normal text-slate-400 text-xs">{item.unit}</span>
+                filteredFefo.map((item) => (
+                  <tr
+                    key={item.id}
+                    className="hover:bg-slate-50/80 dark:hover:bg-zinc-800/40 transition-colors"
+                  >
+                    <td className="py-3.5 pl-1">
+                      <span className="font-bold text-slate-900 dark:text-white block">
+                        {item.name}
+                      </span>
                     </td>
-                    <td className="px-5 py-4 text-xs text-slate-600">
+                    <td className="py-3.5 text-slate-600 dark:text-zinc-300">
+                      {item.donor.name}
+                    </td>
+                    <td className="py-3.5 font-mono font-bold text-slate-800 dark:text-zinc-200">
+                      {item.remainingQuantity.toLocaleString('id-ID')}{' '}
+                      <span className="text-[11px] font-sans font-normal text-slate-400 dark:text-zinc-500">
+                        {item.unit}
+                      </span>
+                    </td>
+                    <td className="py-3.5 text-slate-500 dark:text-zinc-400">
                       {new Date(item.expiryAt).toLocaleString('id-ID', {
                         dateStyle: 'medium',
                         timeStyle: 'short',
                       })}
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="py-3.5">
                       <span
-                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-extrabold ${
                           item.evaluation.badge === 'green'
-                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                            ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60'
                             : item.evaluation.badge === 'yellow'
-                            ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                            : 'bg-red-50 text-red-800 border border-red-200'
+                            ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60 animate-pulse'
+                            : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800/60'
                         }`}
                       >
                         {item.evaluation.label}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-right">
+                    <td className="py-3.5 text-right pr-1">
                       <Link
                         href="/distribusi/buat"
-                        className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-[#2B6153] hover:text-white transition"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-zinc-950 text-xs font-bold shadow-sm transition-all hover:scale-105"
                       >
-                        Salurkan <ArrowUpRight className="w-3.5 h-3.5" />
+                        <span>Salurkan</span>
+                        <ArrowUpRight className="w-3.5 h-3.5" />
                       </Link>
                     </td>
                   </tr>
