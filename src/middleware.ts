@@ -14,7 +14,11 @@ export async function middleware(req: NextRequest) {
     pathname.startsWith('/forgot-password') ||
     pathname.startsWith('/reset-password');
 
-  const isPublicRoute = pathname === '/' || isPublicAuthRoute;
+  const isPublicRoute =
+    pathname === '/' ||
+    pathname.startsWith('/_') ||
+    pathname === '/not-found' ||
+    isPublicAuthRoute;
 
   // 2. Rute khusus ADMIN (Relawan dilarang mengakses)
   const isAdminOnlyRoute =
