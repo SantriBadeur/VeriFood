@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Bell, Menu, Shield, HeartHandshake, AlertTriangle, Clock, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Search, Bell, Menu, Shield, HeartHandshake, AlertTriangle, Clock, ArrowRight, CheckCircle2, X } from 'lucide-react';
 
 export interface HeaderTab {
   label: string;
@@ -82,14 +82,14 @@ export function TopHeader({ currentUser, onOpenMobile }: TopHeaderProps) {
     return () => clearInterval(interval);
   }, []);
 
-  // Auto-close notification dropdown when user scrolls
+  // Close notification dropdown when Escape key is pressed
   useEffect(() => {
     if (!isBellOpen) return;
-    const handleScroll = () => {
-      setIsBellOpen(false);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsBellOpen(false);
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isBellOpen]);
 
   return (
@@ -174,23 +174,25 @@ export function TopHeader({ currentUser, onOpenMobile }: TopHeaderProps) {
           {isBellOpen && (
             <div
               onClick={() => setIsBellOpen(false)}
-              className="fixed inset-0 z-40 bg-black/20 dark:bg-black/50 backdrop-blur-[1px]"
+              className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] transition-opacity"
+              aria-label="Tutup notifikasi"
             />
           )}
 
           <button
             onClick={() => setIsBellOpen(!isBellOpen)}
-            className={`relative p-2 rounded-2xl bg-white/90 dark:bg-[#131b2a]/90 backdrop-blur-md border border-slate-200/80 dark:border-white/10 shadow-sm transition ${
+            className={`relative p-2 rounded-2xl bg-white/90 dark:bg-[#131b2a]/90 backdrop-blur-md border border-slate-200/80 dark:border-white/10 shadow-sm transition active:scale-95 ${
               criticalCount > 0
                 ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
             }`}
             title={criticalCount > 0 ? `🚨 Ada ${criticalCount} pangan kritis <= 2 jam!` : 'Notifikasi'}
+            aria-label="Notifikasi Alarm Kritis"
           >
             <Bell className="w-4 h-4" />
             {criticalCount > 0 ? (
-              <span className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-red-600 text-white font-extrabold text-[9px] shadow-sm animate-pulse ring-2 ring-white dark:ring-[#131b2a]">
-                {criticalCount}
+              <span className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-red-600 text-white font-black text-[9px] shadow-sm animate-pulse ring-2 ring-white dark:ring-[#131b2a] min-w-[18px] text-center leading-none">
+                {criticalCount > 99 ? '99+' : criticalCount}
               </span>
             ) : (
               <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-[#131b2a]" />
@@ -199,76 +201,136 @@ export function TopHeader({ currentUser, onOpenMobile }: TopHeaderProps) {
 
           {/* Floating Dropdown Panel */}
           {isBellOpen && (
-            <div className="absolute right-0 top-12 w-[calc(100vw-1.5rem)] max-w-sm sm:w-96 bg-white dark:bg-[#131b2a] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 p-4 z-50 text-xs">
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Panel Notifikasi Alarm Kedaluwarsa Kritis"
+              className="fixed top-16 left-1/2 -translate-x-1/2 sm:translate-x-0 sm:left-auto sm:right-0 sm:top-12 w-[calc(100vw-1.5rem)] max-w-sm sm:w-96 bg-white dark:bg-[#131b2a] rounded-3xl shadow-2xl border border-slate-200/90 dark:border-white/10 p-4 z-50 text-xs animate-in fade-in zoom-in-95 duration-150"
+            >
+              {/* Header */}
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
-                <div className="flex items-center gap-2">
-                  <div className={`p-1.5 rounded-lg ${criticalCount > 0 ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                <div className="flex items-center gap-2 min-w-0">
+                  <div
+                    className={`p-2 rounded-xl shrink-0 ${
+                      criticalCount > 0
+                        ? 'bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400'
+                        : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400'
+                    }`}
+                  >
                     <AlertTriangle className="w-4 h-4" />
                   </div>
-                  <div>
-                    <h4 className="font-bold text-slate-900 dark:text-slate-100">Alarm Kedaluwarsa Kritis</h4>
-                    <p className="text-[10px] text-slate-400">Pangan $\le 2$ jam yang belum terjadwal</p>
+                  <div className="min-w-0">
+                    <h4 className="font-extrabold text-sm text-slate-900 dark:text-slate-100 truncate">
+                      Alarm Kedaluwarsa Kritis
+                    </h4>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+                      Pangan ≤ 2 jam yang belum terjadwal
+                    </p>
                   </div>
                 </div>
-                {criticalCount > 0 && (
-                  <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-[10px] font-bold">
-                    {criticalCount} Batch
-                  </span>
-                )}
+                <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                  {criticalCount > 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300 text-[10px] font-black">
+                      {criticalCount > 99 ? '99+' : criticalCount} Batch
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setIsBellOpen(false)}
+                    className="p-1 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition active:scale-95"
+                    title="Tutup Notifikasi"
+                    aria-label="Tutup Notifikasi"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
-              <div className="py-2 max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-white/5">
+              {/* Scrollable List */}
+              <div className="py-2.5 max-h-[55vh] sm:max-h-80 overflow-y-auto overscroll-contain space-y-2 pr-0.5">
                 {criticalCount === 0 ? (
-                  <div className="py-6 text-center text-slate-400">
-                    <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-1.5" />
-                    <p className="font-semibold text-slate-700 dark:text-slate-300">Semua Stok Aman</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">Tidak ada batch yang basi dalam waktu $\le 2$ jam.</p>
+                  <div className="py-8 text-center text-slate-400">
+                    <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto mb-2" />
+                    <p className="font-bold text-slate-700 dark:text-slate-200 text-sm">Semua Stok Aman</p>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                      Tidak ada batch yang basi dalam kurun waktu ≤ 2 jam.
+                    </p>
                   </div>
                 ) : (
-                  criticalItems.map((item) => (
-                    <div key={item.id} className="py-2.5 flex flex-col gap-1 hover:bg-slate-50 dark:hover:bg-slate-800/40 p-1 rounded-xl transition">
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-slate-900 dark:text-slate-100">{item.name}</span>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          item.minutesLeft <= 60
-                            ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 animate-pulse'
-                            : 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400'
-                        }`}>
-                          <Clock className="w-3 h-3 inline mr-1" />
-                          {item.minutesLeft <= 0 ? 'Basi Sekarang!' : `Sisa ${item.minutesLeft} mnt`}
-                        </span>
+                  criticalItems.map((item) => {
+                    const isImmediate = item.minutesLeft <= 0;
+                    const isUrgent = item.minutesLeft <= 60;
+
+                    return (
+                      <div
+                        key={item.id}
+                        className="p-3 rounded-2xl bg-slate-50/80 dark:bg-slate-800/40 hover:bg-slate-100/90 dark:hover:bg-slate-800/70 transition flex flex-col gap-2 border border-slate-100/90 dark:border-white/5"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <span className="font-bold text-slate-900 dark:text-slate-100 text-xs block truncate">
+                              {item.name}
+                            </span>
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 block truncate mt-0.5">
+                              🏢 {item.donorName}
+                            </span>
+                          </div>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 flex items-center gap-1 ${
+                              isImmediate
+                                ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300 animate-pulse'
+                                : isUrgent
+                                ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300'
+                                : 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300'
+                            }`}
+                          >
+                            <Clock className="w-3 h-3" />
+                            {isImmediate ? 'Basi Sekarang!' : `Sisa ${item.minutesLeft} mnt`}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-200/50 dark:border-white/5">
+                          <span className="font-semibold text-slate-600 dark:text-slate-300">
+                            Stok:{' '}
+                            <strong className="text-slate-900 dark:text-slate-100 font-extrabold">
+                              {item.unreservedQuantity} {item.unit}
+                            </strong>
+                          </span>
+                          <Link
+                            href={`/distribusi/buat?foodStockId=${item.id}`}
+                            onClick={() => setIsBellOpen(false)}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-[11px] font-bold shadow-sm transition"
+                          >
+                            Distribusikan <ArrowRight className="w-3 h-3" />
+                          </Link>
+                        </div>
                       </div>
-                      <div className="flex items-center justify-between text-[11px] text-slate-500">
-                        <span>{item.donorName}</span>
-                        <span className="font-bold text-slate-700 dark:text-slate-300">
-                          {item.unreservedQuantity} {item.unit} tersisa
-                        </span>
-                      </div>
-                      <div className="pt-1 flex items-center justify-end">
-                        <Link
-                          href={`/distribusi/buat?foodStockId=${item.id}`}
-                          onClick={() => setIsBellOpen(false)}
-                          className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400"
-                        >
-                          Distribusikan Segera <ArrowRight className="w-3 h-3" />
-                        </Link>
-                      </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
 
-              {criticalCount > 0 && (
-                <div className="pt-2 border-t border-slate-100 dark:border-white/10 text-center">
+              {/* Footer */}
+              <div className="pt-2.5 border-t border-slate-100 dark:border-white/10 flex items-center justify-between gap-2">
+                {criticalCount > 0 ? (
                   <Link
                     href="/makanan/kelola"
                     onClick={() => setIsBellOpen(false)}
-                    className="text-[11px] font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                    className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 hover:underline inline-flex items-center gap-1"
                   >
-                    Buka Manajemen Gudang →
+                    Buka Kelola Gudang →
                   </Link>
-                </div>
-              )}
+                ) : (
+                  <span className="text-[11px] text-slate-400">Gudang optimal</span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setIsBellOpen(false)}
+                  className="px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 text-[11px] font-bold transition active:scale-95"
+                >
+                  Tutup
+                </button>
+              </div>
             </div>
           )}
         </div>

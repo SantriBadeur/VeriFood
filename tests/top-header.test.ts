@@ -49,5 +49,12 @@ describe('Top Header Capsule Tabs & RBAC', () => {
 
     // Bell notification dropdown uses responsive width safe for 360px
     expect(content).toMatch(/w-\[calc\(100vw-.*\)\]/);
+
+    // Bell notification dropdown is centered on mobile to prevent left-side text clipping
+    expect(content).toContain('fixed top-16 left-1/2 -translate-x-1/2');
+
+    // Contains accessible close button and backdrop
+    expect(content).toContain('aria-label="Tutup Notifikasi"');
+    expect(content).toContain('setIsBellOpen(false)');
   });
 });
