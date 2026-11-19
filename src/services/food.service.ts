@@ -14,6 +14,13 @@ export interface InboundFoodInput {
   notes?: string;
 }
 
+export interface UpdateFoodMetadataInput {
+  name?: string;
+  donorId?: string;
+  expiryAt?: Date | string;
+  notes?: string;
+}
+
 export const foodService = {
   async recordInbound(input: InboundFoodInput, userId: string) {
     const isAccepted = input.packagingIntact && input.temperatureSafe && input.visualSmellOk;
@@ -165,6 +172,68 @@ export const foodService = {
     });
 
     return disposed;
+  },
+
+  async updateMetadata(
+    stockId: string,
+    input: UpdateFoodMetadataInput,
+    userId: string,
+    userRole: string
+  ) {
+    if (userRole !== 'ADMIN') {
+      throw new Error('Hanya Admin yang dapat mengoreksi informasi metadata makanan');
+    }
+
+    const current = await prisma.foodStock.findUnique({
+      where: { id: stockId },
+      include: { donor: true },
+    });
+
+    if (!current) {
+      throw new Error('Data stok makanan tidak ditemukan');
+    }
+
+    if (input.donorId && input.donorId !== current.donorId) {
+      const donor = await prisma.donor.findUnique({ where: { id: input.donorId } });
+      if (!donor) {
+        throw new Error('Donatur tidak ditemukan');
+      }
+    }
+
+    const dataToUpdate: Record<string, unknown> = {};
+    if (input.name !== undefined) dataToUpdate.name = input.name.trim();
+    if (input.donorId !== undefined) dataToUpdate.donorId = input.donorId;
+    if (input.expiryAt !== undefined) dataToUpdate.expiryAt = new Date(input.expiryAt);
+    if (input.notes !== undefined) dataToUpdate.notes = input.notes;
+
+    const updated = await prisma.foodStock.update({
+      where: { id: stockId },
+      data: dataToUpdate,
+      include: { donor: true },
+    });
+
+    await auditService.record({
+      userId,
+      action: 'STOCK_METADATA_UPDATE',
+      entity: 'FoodStock',
+      entityId: stockId,
+      details: {
+        previous: {
+          name: current.name,
+          donorId: current.donorId,
+          expiryAt: current.expiryAt,
+          notes: current.notes,
+        },
+        updated: {
+          name: updated.name,
+          donorId: updated.donorId,
+          expiryAt: updated.expiryAt,
+          notes: updated.notes,
+        },
+      },
+    });
+
+    return updated;
   },
 
   async listInventory(params?: { search?: string; status?: string }) {

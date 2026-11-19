@@ -1,19 +1,26 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { AlertOctagon, Edit3, Trash2 } from 'lucide-react';
+import { AlertOctagon, Edit3, Trash2, FileText } from 'lucide-react';
 
 interface InventoryItem {
   id: string;
   name: string;
+  donorId?: string;
+  notes?: string | null;
   initialQuantity: number;
   remainingQuantity: number;
   unit: string;
   expiryAt: string;
   physicalStatus: string;
   isDisposed: boolean;
-  donor: { name: string };
+  donor: { id?: string; name: string };
   evaluation: { label: string; badge: string; canDistribute: boolean };
+}
+
+interface DonorOption {
+  id: string;
+  name: string;
 }
 
 export default function StockManagePage() {
@@ -31,12 +38,26 @@ export default function StockManagePage() {
   const [disposeQty, setDisposeQty] = useState('');
   const [disposeError, setDisposeError] = useState('');
 
+  // Metadata Edit Modal
+  const [donors, setDonors] = useState<DonorOption[]>([]);
+  const [editMetaItem, setEditMetaItem] = useState<InventoryItem | null>(null);
+  const [metaName, setMetaName] = useState('');
+  const [metaDonorId, setMetaDonorId] = useState('');
+  const [metaExpiry, setMetaExpiry] = useState('');
+  const [metaNotes, setMetaNotes] = useState('');
+  const [metaError, setMetaError] = useState('');
+
   const loadData = () => {
     fetch('/api/food/fefo')
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => setItems(data))
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
+
+    fetch('/api/donors')
+      .then((res) => (res.ok ? res.json() : { data: [] }))
+      .then((res) => setDonors(res.data || []))
+      .catch(() => setDonors([]));
   };
 
   useEffect(() => {
@@ -106,6 +127,49 @@ export default function StockManagePage() {
     }
   };
 
+  const openEditMeta = (item: InventoryItem) => {
+    setEditMetaItem(item);
+    setMetaName(item.name);
+    setMetaDonorId(item.donorId || item.donor?.id || '');
+    try {
+      const d = new Date(item.expiryAt);
+      const localIso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      setMetaExpiry(localIso);
+    } catch {
+      setMetaExpiry('');
+    }
+    setMetaNotes(item.notes || '');
+    setMetaError('');
+  };
+
+  const handleSaveMetadata = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editMetaItem) return;
+    setMetaError('');
+
+    try {
+      const res = await fetch(`/api/food/${editMetaItem.id}/metadata`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: metaName,
+          donorId: metaDonorId || undefined,
+          expiryAt: metaExpiry ? new Date(metaExpiry).toISOString() : undefined,
+          notes: metaNotes,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal menyimpan perubahan metadata');
+
+      setEditMetaItem(null);
+      loadData();
+    } catch (err: unknown) {
+      if (err instanceof Error) setMetaError(err.message);
+      else setMetaError('Terjadi kesalahan');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -162,6 +226,12 @@ export default function StockManagePage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right space-x-2">
+                        <button
+                          onClick={() => openEditMeta(item)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                        >
+                          <FileText className="w-3.5 h-3.5" /> Edit Info
+                        </button>
                         <button
                           onClick={() => {
                             setCorrectItem(item);
@@ -325,6 +395,91 @@ export default function StockManagePage() {
                 className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700"
               >
                 Konfirmasi Buang
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Modal Edit Metadata */}
+      {editMetaItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <form onSubmit={handleSaveMetadata} className="bg-white rounded-xl max-w-lg w-full p-6 space-y-4">
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-emerald-600" /> Koreksi Metadata Makanan
+            </h3>
+            <p className="text-xs text-slate-500">
+              Koreksi kesalahan ketik nama makanan, asal donatur, atau tanggal kedaluwarsa. Perubahan ini akan dicatat dalam riwayat audit sistem.
+            </p>
+
+            {metaError && (
+              <div className="p-3 bg-red-50 text-red-700 text-xs rounded-lg border border-red-200">
+                {metaError}
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Nama Makanan</label>
+              <input
+                type="text"
+                value={metaName}
+                onChange={(e) => setMetaName(e.target.value)}
+                required
+                className="w-full rounded-lg border border-slate-300 p-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Donatur Asal</label>
+              <select
+                value={metaDonorId}
+                onChange={(e) => setMetaDonorId(e.target.value)}
+                className="w-full rounded-lg border border-slate-300 p-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+              >
+                <option value="">-- Tetap Gunakan Donatur Sebelumnya --</option>
+                {donors.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Tanggal Kedaluwarsa</label>
+              <input
+                type="datetime-local"
+                value={metaExpiry}
+                onChange={(e) => setMetaExpiry(e.target.value)}
+                required
+                className="w-full rounded-lg border border-slate-300 p-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Catatan Tambahan / Alasan Koreksi</label>
+              <textarea
+                value={metaNotes}
+                onChange={(e) => setMetaNotes(e.target.value)}
+                rows={2}
+                placeholder="Misal: Koreksi salah pilih donatur saat input terburu-buru"
+                className="w-full rounded-lg border border-slate-300 p-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setEditMetaItem(null)}
+                className="px-4 py-2 border rounded-lg text-sm text-slate-600 hover:bg-slate-50"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700"
+              >
+                Simpan Perubahan
               </button>
             </div>
           </form>
