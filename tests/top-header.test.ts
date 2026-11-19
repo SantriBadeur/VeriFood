@@ -56,5 +56,9 @@ describe('Top Header Capsule Tabs & RBAC', () => {
     // Contains accessible close button and backdrop
     expect(content).toContain('aria-label="Tutup Notifikasi"');
     expect(content).toContain('setIsBellOpen(false)');
+
+    // Closes on route change and keeps desktop backdrop non-obtrusive
+    expect(content).toContain('sm:bg-transparent');
+    expect(content).toMatch(/useEffect\(\(\)\s*=>\s*\{\s*setIsBellOpen\(false\);\s*\}\s*,\s*\[pathname\]\);/);
   });
 });

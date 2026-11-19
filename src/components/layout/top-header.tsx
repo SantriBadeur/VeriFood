@@ -82,6 +82,11 @@ export function TopHeader({ currentUser, onOpenMobile }: TopHeaderProps) {
     return () => clearInterval(interval);
   }, []);
 
+  // Auto-close notification dropdown whenever user navigates to a new page
+  useEffect(() => {
+    setIsBellOpen(false);
+  }, [pathname]);
+
   // Close notification dropdown when Escape key is pressed
   useEffect(() => {
     if (!isBellOpen) return;
@@ -170,11 +175,11 @@ export function TopHeader({ currentUser, onOpenMobile }: TopHeaderProps) {
 
         {/* Notifications Icon with Interactive Critical Alarm Dropdown */}
         <div className="relative">
-          {/* Backdrop for click outside / mobile touch dismiss */}
+          {/* Backdrop for click outside (dark on mobile, transparent on laptop/desktop) */}
           {isBellOpen && (
             <div
               onClick={() => setIsBellOpen(false)}
-              className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px] transition-opacity"
+              className="fixed inset-0 z-40 bg-black/40 sm:bg-transparent backdrop-blur-[2px] sm:backdrop-blur-none transition-opacity"
               aria-label="Tutup notifikasi"
             />
           )}
