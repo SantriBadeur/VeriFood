@@ -51,8 +51,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             onCloseMobile={() => setMobileOpen(false)}
           />
 
-          {/* Main Content Area (Offset for Left Floating Dock on Desktop) */}
-          <div className="flex-1 flex flex-col min-w-0 lg:pl-24 transition-all duration-300">
+          {/* Main Content Area (Offset for Left Floating Dock on Desktop with generous breathing room) */}
+          <div className="flex-1 flex flex-col min-w-0 lg:pl-28 xl:pl-32 transition-all duration-300">
             {/* Top Floating Capsule Header */}
             <TopHeader
               currentUser={currentUser}
@@ -60,7 +60,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             />
 
             {/* Page Canvas Container */}
-            <main className="flex-1 w-full max-w-7xl mx-auto p-3 sm:p-5 lg:p-6 pb-12">
+            <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-16">
               {children}
             </main>
           </div>

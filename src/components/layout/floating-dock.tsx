@@ -133,7 +133,7 @@ export function FloatingDock({
                 title={item.label}
                 className={`relative group flex items-center justify-center w-11 h-11 rounded-2xl transition-all duration-200 ${
                   active
-                    ? 'bg-slate-900 text-white dark:bg-slate-200 dark:text-slate-900 shadow-md ring-2 ring-emerald-500/20 dark:ring-emerald-400/40 scale-105'
+                    ? 'bg-slate-900 text-white dark:bg-emerald-500/15 dark:text-emerald-400 dark:border dark:border-emerald-500/30 shadow-md ring-2 ring-emerald-500/20 scale-105'
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/70'
                 }`}
               >
@@ -146,7 +146,7 @@ export function FloatingDock({
 
                 {/* Sleek integrated active indicator dot */}
                 {active && (
-                  <span className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-600" />
+                  <span className="absolute bottom-1 w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 shadow-sm shadow-emerald-500/50" />
                 )}
               </Link>
             );

@@ -30,6 +30,7 @@ interface FoodItem {
     status: 'AMAN' | 'MENDEKATI_KEDALUWARSA' | 'KEDALUWARSA' | 'DITOLAK';
     label: string;
     badge: 'green' | 'yellow' | 'red';
+    canDistribute?: boolean;
   };
   donor: {
     name: string;
@@ -320,9 +321,9 @@ export default function DashboardPage() {
                     <td className="py-3.5 text-slate-600 dark:text-slate-300">
                       {item.donor.name}
                     </td>
-                    <td className="py-3.5 font-mono font-bold text-slate-800 dark:text-slate-200">
+                    <td className="py-3.5 font-sans font-bold tabular-nums text-slate-800 dark:text-slate-200 text-sm">
                       {item.remainingQuantity.toLocaleString('id-ID')}{' '}
-                      <span className="text-[11px] font-sans font-normal text-slate-500 dark:text-slate-400">
+                      <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
                         {item.unit}
                       </span>
                     </td>
@@ -345,14 +346,25 @@ export default function DashboardPage() {
                         {item.evaluation.label}
                       </span>
                     </td>
-                    <td className="py-3.5 text-right pr-1">
-                      <Link
-                        href="/distribusi/buat"
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-200 dark:hover:bg-white text-white dark:text-slate-900 text-xs font-bold shadow-sm transition-all hover:scale-105"
-                      >
-                        <span>Salurkan</span>
-                        <ArrowUpRight className="w-3.5 h-3.5" />
-                      </Link>
+                    <td className="py-3.5 text-right pr-2">
+                      {item.evaluation.status === 'KEDALUWARSA' || !item.evaluation.canDistribute ? (
+                        <Link
+                          href="/makanan/kelola"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60 text-xs font-bold transition-all hover:scale-105"
+                          title="Makanan telah kedaluwarsa. Alihkan ke pemusnahan barang."
+                        >
+                          <span>Musnahkan</span>
+                          <ArrowUpRight className="w-3.5 h-3.5 text-rose-500" />
+                        </Link>
+                      ) : (
+                        <Link
+                          href="/distribusi/buat"
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-md shadow-emerald-950/20 transition-all hover:scale-105"
+                        >
+                          <span>Salurkan</span>
+                          <ArrowUpRight className="w-3.5 h-3.5 text-white" />
+                        </Link>
+                      )}
                     </td>
                   </tr>
                 ))
