@@ -2,14 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Truck, CheckCircle2, XCircle, Plus, Calendar, UserCheck } from 'lucide-react';
+import { Truck, CheckCircle2, XCircle, Plus, Calendar, UserCheck, Phone, MessageSquare, Navigation } from 'lucide-react';
 import { useCurrentUser } from '@/lib/user-context';
+import { getWhatsAppUrl, getCallUrl, getGoogleNavigationUrl } from '@/lib/quick-wins-utils';
 
 interface Distribution {
   id: string;
   status: 'TERJADWAL' | 'DIKIRIM' | 'DITERIMA' | 'DIBATALKAN';
   scheduledDate: string;
-  beneficiary: { name: string; address: string };
+  beneficiary: { name: string; address: string; contact?: string };
   items: { id: string; quantity: number; foodStock: { name: string; unit: string } }[];
   createdByUserId: string;
   createdByUser?: { name: string; role: string };
@@ -179,13 +180,40 @@ export default function DistributionListPage() {
                   <p className="text-xs text-slate-500">{dist.beneficiary.address}</p>
                   {dist.beneficiary?.address && (
                     <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dist.beneficiary.address)}`}
+                      href={getGoogleNavigationUrl(dist.beneficiary.address)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                      className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 hover:underline"
+                      title="Buka rute navigasi Google Maps"
                     >
-                      📍 Buka di Google Maps
+                      <Navigation className="w-3 h-3 text-blue-600" />
+                      <span>Rute Maps</span>
                     </a>
+                  )}
+                  {dist.beneficiary?.contact && (
+                    <>
+                      <a
+                        href={getCallUrl(dist.beneficiary.contact)}
+                        className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 hover:bg-emerald-100 transition"
+                        title={`Hubungi telepon: ${dist.beneficiary.contact}`}
+                      >
+                        <Phone className="w-3 h-3 text-emerald-600" />
+                        <span>Telepon</span>
+                      </a>
+                      <a
+                        href={getWhatsAppUrl(
+                          dist.beneficiary.contact,
+                          `Halo ${dist.beneficiary.name}, kami dari Relawan SisaBerkah sedang menyiapkan/mengirim paket bantuan makanan.`
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300 hover:bg-emerald-200 transition font-medium"
+                        title={`WhatsApp langsung ke: ${dist.beneficiary.contact}`}
+                      >
+                        <MessageSquare className="w-3 h-3 text-emerald-600" />
+                        <span>WhatsApp</span>
+                      </a>
+                    </>
                   )}
                 </div>
 
