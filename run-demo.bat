@@ -92,7 +92,12 @@ echo =====================================================================
 echo.
 
 :: 8. Jalankan Next.js server
-call npm.cmd run dev
+if not exist "%~dp0.next\BUILD_ID" (
+    echo [INFO] Menyiapkan production build...
+    call npm.cmd run build
+)
+echo [INFO] Menjalankan server web SisaBerkah...
+call npm.cmd start
 
 echo.
 echo [INFO] Server demo SisaBerkah telah dihentikan.
