@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import OfflineIndicator from '@/components/OfflineIndicator';
 
 export const metadata: Metadata = {
   title: 'SisaBerkah - Food Bank Platform',
   description: 'Sistem Manajemen Penyelamatan dan Distribusi Pangan Berlebih Berbasis FEFO',
+  manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -13,7 +15,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id">
-      <body className="antialiased min-h-screen font-sans bg-[#f8fafc] dark:bg-[#0c0e12] text-slate-900 dark:text-zinc-100 selection:bg-emerald-500 selection:text-white">{children}</body>
+      <body className="antialiased min-h-screen font-sans bg-[#f8fafc] dark:bg-[#0c0e12] text-slate-900 dark:text-zinc-100 selection:bg-emerald-500 selection:text-white">
+        {children}
+        <OfflineIndicator />
+      </body>
     </html>
   );
 }
