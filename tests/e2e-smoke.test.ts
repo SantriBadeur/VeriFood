@@ -11,6 +11,9 @@ describe('UI Route Verification', () => {
     const DistributePage = await import('../src/app/(dashboard)/distribusi/buat/page');
     expect(DistributePage.default).toBeDefined();
 
+    const DistributionListPage = await import('../src/app/(dashboard)/distribusi/page');
+    expect(DistributionListPage.default).toBeDefined();
+
     const LoginPage = await import('../src/app/(auth)/login/page');
     expect(LoginPage.default).toBeDefined();
 

@@ -104,7 +104,19 @@ export default function DistributionListPage() {
                 </div>
 
                 <h3 className="text-base font-bold text-slate-900">{dist.beneficiary.name}</h3>
-                <p className="text-xs text-slate-500">{dist.beneficiary.address}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-xs text-slate-500">{dist.beneficiary.address}</p>
+                  {dist.beneficiary?.address && (
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dist.beneficiary.address)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                    >
+                      📍 Buka di Google Maps
+                    </a>
+                  )}
+                </div>
 
                 <div className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
                   <span className="font-semibold text-slate-700">Daftar Makanan: </span>

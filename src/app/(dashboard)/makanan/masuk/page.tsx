@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Check, X, ShieldAlert } from 'lucide-react';
+import { Check, X, ShieldAlert, Clock } from 'lucide-react';
+import { EXPIRY_SHORTCUTS, calculateExpiryPreset } from '@/lib/quick-wins-utils';
 
 export default function InboundFoodPage() {
   const [donors, setDonors] = useState<{ id: string; name: string }[]>([]);
@@ -161,7 +162,12 @@ export default function InboundFoodPage() {
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-slate-700 mb-1">Batas Kedaluwarsa</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-slate-700">Batas Kedaluwarsa</label>
+              <span className="text-xs text-slate-400 flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5" /> Shortcut Cepat
+              </span>
+            </div>
             <input
               type="datetime-local"
               value={expiryAt}
@@ -169,6 +175,27 @@ export default function InboundFoodPage() {
               required
               className="w-full rounded-lg border border-slate-300 p-2.5 text-sm"
             />
+            {/* Quick Expiry Shortcuts for Field Volunteers */}
+            <div className="mt-2.5 flex flex-wrap items-center gap-2">
+              <span className="text-xs font-medium text-slate-500 mr-1">Pintas Jam:</span>
+              {EXPIRY_SHORTCUTS.map((shortcut) => (
+                <button
+                  key={shortcut.id}
+                  type="button"
+                  onClick={() => setExpiryAt(calculateExpiryPreset(shortcut.hours))}
+                  title={shortcut.description}
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium rounded-lg border border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 transition-colors active:scale-95 text-slate-700 shadow-sm"
+                >
+                  <span>{shortcut.label}</span>
+                  {shortcut.sublabel && (
+                    <span className="text-[10px] text-slate-400 hidden sm:inline">({shortcut.sublabel})</span>
+                  )}
+                </button>
+              ))}
+            </div>
+            <p className="mt-1.5 text-[11px] text-slate-400">
+              ⚡ Tombol pintas: <strong>+4 Jam</strong> (bersantan/cepat basi), <strong>+8 Jam</strong> (siang ke malam), <strong>Besok Pagi (+24 Jam)</strong>, <strong>+3 Hari</strong> (makanan awet).
+            </p>
           </div>
         </div>
 
