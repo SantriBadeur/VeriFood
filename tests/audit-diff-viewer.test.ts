@@ -17,12 +17,12 @@ describe('Audit Diff Viewer Logic (Task 5)', () => {
     const diff = parseAuditDiff(rawDetails, 'STOCK_METADATA_UPDATE');
     expect(diff.type).toBe('NESTED_DIFF');
     expect(diff.changes).toHaveLength(2);
-    expect(diff.changes[0]).toEqual({
+    expect(diff.changes![0]).toEqual({
       field: 'name',
       before: 'Roti Gandum Typos',
       after: 'Roti Gandum Revisi',
     });
-    expect(diff.changes[1]).toEqual({
+    expect(diff.changes![1]).toEqual({
       field: 'donorId',
       before: 'donor-1',
       after: 'donor-2',

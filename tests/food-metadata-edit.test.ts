@@ -113,7 +113,7 @@ describe('Food Metadata Editing (Task 1)', () => {
     expect(unauthRes.status).toBe(401);
 
     // 2. Volunteer request -> 403
-    const volToken = createSessionToken({ id: volunteer.id, role: volunteer.role, email: volunteer.email });
+    const volToken = createSessionToken({ id: volunteer.id, role: volunteer.role, email: volunteer.email, name: volunteer.name });
     const volReq = new Request(`http://localhost:3000/api/food/${stock.id}/metadata`, {
       method: 'PATCH',
       headers: {
@@ -126,7 +126,7 @@ describe('Food Metadata Editing (Task 1)', () => {
     expect(volRes.status).toBe(403);
 
     // 3. Admin request -> 200
-    const adminToken = createSessionToken({ id: admin.id, role: admin.role, email: admin.email });
+    const adminToken = createSessionToken({ id: admin.id, role: admin.role, email: admin.email, name: admin.name });
     const adminReq = new Request(`http://localhost:3000/api/food/${stock.id}/metadata`, {
       method: 'PATCH',
       headers: {
