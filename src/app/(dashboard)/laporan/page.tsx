@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Download, FileBarChart2, ShieldCheck, History, Calendar, RotateCcw } from 'lucide-react';
+import Link from 'next/link';
+import { Download, FileBarChart2, ShieldCheck, History, Calendar, RotateCcw, Printer } from 'lucide-react';
 
 interface RescuedMetric {
   unit: string;
@@ -80,7 +81,14 @@ export default function ReportsAndAuditPage() {
           </p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href={`/laporan/cetak${startDate || endDate ? `?startDate=${startDate}&endDate=${endDate}` : ''}`}
+            target="_blank"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold shadow-sm transition"
+          >
+            <Printer className="w-3.5 h-3.5 text-emerald-400" /> Cetak Dokumen Resmi (PDF)
+          </Link>
           {activeTab === 'rescued' && (
             <button
               onClick={() => handleDownloadCSV('rescued')}
