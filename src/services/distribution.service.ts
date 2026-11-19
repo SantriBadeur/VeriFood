@@ -8,6 +8,12 @@ export interface DistributionItemInput {
   quantity: number;
 }
 
+export interface ProofOfDeliveryData {
+  recipientName?: string;
+  proofPhoto?: string;
+  signatureData?: string;
+}
+
 export interface CreateDistributionInput {
   beneficiaryId: string;
   scheduledDate: Date | string;
@@ -119,7 +125,12 @@ export const distributionService = {
     return distribution;
   },
 
-  async updateStatus(distributionId: string, newStatus: DistributionStatus, userId: string) {
+  async updateStatus(
+    distributionId: string,
+    newStatus: DistributionStatus,
+    userId: string,
+    proof?: ProofOfDeliveryData
+  ) {
     const current = await prisma.distribution.findUnique({
       where: { id: distributionId },
       include: { items: { include: { foodStock: true } } },
@@ -181,6 +192,10 @@ export const distributionService = {
         data: {
           status: 'DITERIMA',
           deliveredByUserId: userId,
+          deliveredAt: new Date(),
+          recipientName: proof?.recipientName || null,
+          proofPhoto: proof?.proofPhoto || null,
+          signatureData: proof?.signatureData || null,
         },
       });
     } else if (newStatus === 'DIBATALKAN') {
@@ -202,15 +217,24 @@ export const distributionService = {
       });
     }
 
+    const auditDetails: Record<string, unknown> = {
+      from: current.status,
+      to: newStatus,
+    };
+    if (newStatus === 'DITERIMA') {
+      auditDetails.hasProofPhoto = Boolean(proof?.proofPhoto);
+      auditDetails.hasSignature = Boolean(proof?.signatureData);
+      if (proof?.recipientName) {
+        auditDetails.recipientName = proof.recipientName;
+      }
+    }
+
     await auditService.record({
       userId,
       action: 'DISTRIBUTION_STATUS_CHANGE',
       entity: 'Distribution',
       entityId: distributionId,
-      details: {
-        from: current.status,
-        to: newStatus,
-      },
+      details: auditDetails,
     });
 
     return prisma.distribution.findUnique({

@@ -131,6 +131,12 @@ model Distribution {
   deliveredByUserId  String?           // Volunteer/Admin who changed status to DITERIMA
   deliveredByUser    User?              @relation("DistributionDeliveredBy", fields: [deliveredByUserId], references: [id])
   
+  // Proof of Delivery / BAST
+  recipientName      String?            // Nama perwakilan penerima manfaat
+  proofPhoto         String?            // Base64 data URL foto serah terima
+  signatureData      String?            // Base64 data URL tanda tangan penerima
+  deliveredAt        DateTime?          // Waktu serah terima aktual
+  
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
   

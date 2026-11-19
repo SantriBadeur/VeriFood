@@ -10,9 +10,14 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     }
 
     const { id } = await params;
-    const { status } = await req.json();
+    const body = await req.json();
+    const { status, recipientName, proofPhoto, signatureData } = body;
 
-    const updated = await distributionService.updateStatus(id, status, user.id);
+    const updated = await distributionService.updateStatus(id, status, user.id, {
+      recipientName,
+      proofPhoto,
+      signatureData,
+    });
     return NextResponse.json(updated);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Error';

@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Truck, CheckCircle2, XCircle, Plus, Calendar, UserCheck, Phone, MessageSquare, Navigation } from 'lucide-react';
+import { Truck, CheckCircle2, XCircle, Plus, Calendar, UserCheck, Phone, MessageSquare, Navigation, FileText } from 'lucide-react';
 import { useCurrentUser } from '@/lib/user-context';
 import { getWhatsAppUrl, getCallUrl, getGoogleNavigationUrl } from '@/lib/quick-wins-utils';
+import ProofOfDeliveryModal from '@/components/ProofOfDeliveryModal';
 
 interface Distribution {
   id: string;
@@ -18,6 +19,10 @@ interface Distribution {
   assignedToUser?: { name: string };
   dispatchedByUser?: { name: string };
   deliveredByUser?: { name: string };
+  recipientName?: string | null;
+  proofPhoto?: string | null;
+  signatureData?: string | null;
+  deliveredAt?: string | null;
 }
 
 export default function DistributionListPage() {
@@ -25,6 +30,11 @@ export default function DistributionListPage() {
   const [distributions, setDistributions] = useState<Distribution[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'my-tasks'>('all');
+
+  // Proof of Delivery Modal State
+  const [selectedProofDist, setSelectedProofDist] = useState<Distribution | null>(null);
+  const [proofModalOpen, setProofModalOpen] = useState(false);
+  const [proofModalReadOnly, setProofModalReadOnly] = useState(false);
 
   const loadData = () => {
     fetch('/api/distributions')
@@ -37,6 +47,38 @@ export default function DistributionListPage() {
   useEffect(() => {
     loadData();
   }, []);
+
+  const handleOpenProofModal = (dist: Distribution) => {
+    setSelectedProofDist(dist);
+    setProofModalReadOnly(false);
+    setProofModalOpen(true);
+  };
+
+  const handleViewProof = (dist: Distribution) => {
+    setSelectedProofDist(dist);
+    setProofModalReadOnly(true);
+    setProofModalOpen(true);
+  };
+
+  const handleConfirmDeliveryWithProof = async (data: { recipientName: string; proofPhoto: string; signatureData: string }) => {
+    if (!selectedProofDist) return;
+
+    const res = await fetch(`/api/distributions/${selectedProofDist.id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        status: 'DITERIMA',
+        recipientName: data.recipientName,
+        proofPhoto: data.proofPhoto,
+        signatureData: data.signatureData,
+      }),
+    });
+
+    const resData = await res.json();
+    if (!res.ok) throw new Error(resData.error || 'Gagal mengubah status');
+
+    loadData();
+  };
 
   const handleUpdateStatus = async (id: string, newStatus: string) => {
     if (!confirm(`Konfirmasi ubah status distribusi menjadi ${newStatus}?`)) return;
@@ -253,10 +295,10 @@ export default function DistributionListPage() {
                 {dist.status === 'DIKIRIM' && (
                   <>
                     <button
-                      onClick={() => handleUpdateStatus(dist.id, 'DITERIMA')}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold"
+                      onClick={() => handleOpenProofModal(dist)}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm"
                     >
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Konfirmasi Diterima
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Konfirmasi Diterima (BAST)
                     </button>
                     <button
                       onClick={() => handleUpdateStatus(dist.id, 'DIBATALKAN')}
@@ -267,14 +309,39 @@ export default function DistributionListPage() {
                   </>
                 )}
 
-                {(dist.status === 'DITERIMA' || dist.status === 'DIBATALKAN') && (
-                  <span className="text-xs text-slate-400 italic">Siklus selesai</span>
+                {dist.status === 'DITERIMA' && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-emerald-700 font-medium">Tuntas</span>
+                    <button
+                      type="button"
+                      onClick={() => handleViewProof(dist)}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-medium transition"
+                      title="Lihat Berita Acara Serah Terima & Dokumentasi Foto"
+                    >
+                      <FileText className="w-3.5 h-3.5" /> BAST & Bukti
+                    </button>
+                  </div>
+                )}
+
+                {dist.status === 'DIBATALKAN' && (
+                  <span className="text-xs text-slate-400 italic">Dibatalkan</span>
                 )}
               </div>
             </div>
           ))
         )}
       </div>
+
+      {/* Proof of Delivery Modal */}
+      {selectedProofDist && (
+        <ProofOfDeliveryModal
+          isOpen={proofModalOpen}
+          onClose={() => setProofModalOpen(false)}
+          distribution={selectedProofDist}
+          readOnly={proofModalReadOnly}
+          onSubmit={handleConfirmDeliveryWithProof}
+        />
+      )}
     </div>
   );
 }
