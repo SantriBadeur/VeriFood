@@ -42,7 +42,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <ThemeProvider>
       <UserProvider user={currentUser}>
-        <div className="min-h-screen w-full bg-[#f8fafc] dark:bg-[#0c0e12] text-slate-900 dark:text-zinc-100 transition-colors duration-300 flex overflow-x-hidden antialiased font-sans">
+        <div className="min-h-screen w-full bg-[#f8fafc] dark:bg-[#0b0f17] text-slate-800 dark:text-slate-200 transition-colors duration-300 flex overflow-x-hidden antialiased font-sans">
           {/* Left Floating Dock */}
           <FloatingDock
             currentUser={currentUser}

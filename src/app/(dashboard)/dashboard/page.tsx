@@ -131,12 +131,12 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100">
               {getGreeting()}, {currentUser?.name?.split(' ')[0] || 'Relawan'}
             </h1>
             <Sparkles className="w-5 h-5 text-amber-500 animate-pulse" />
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-1 font-medium">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">
             Pantau stok pangan masuk, prioritas FEFO, dan jadwal distribusi secara realtime.
           </p>
         </div>
@@ -236,20 +236,20 @@ export default function DashboardPage() {
       {/* ============================================================== */}
       <div
         id="antrean-fefo"
-        className="p-6 sm:p-7 rounded-3xl bg-white dark:bg-[#15181e] border border-slate-200/80 dark:border-white/10 shadow-lg shadow-slate-900/5 dark:shadow-black/30 transition-all"
+        className="p-6 sm:p-7 rounded-3xl bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-white/10 shadow-lg shadow-slate-900/5 dark:shadow-black/40 transition-all"
       >
         {/* Table Header with Search & Badge Counters */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100 dark:border-zinc-800">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                 Antrean Prioritas FEFO (First Expired, First Out)
               </h2>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400">
                 Live Invariant
               </span>
             </div>
-            <p className="text-xs text-slate-400 dark:text-zinc-500 font-medium mt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
               Urutan batch makanan aktif yang wajib didistribusikan lebih dulu berdasarkan tanggal kedaluwarsa.
             </p>
           </div>
@@ -257,20 +257,20 @@ export default function DashboardPage() {
           {/* Search & Filter Controls */}
           <div className="flex flex-wrap items-center gap-2.5">
             <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
               <input
                 type="text"
                 value={fefoSearch}
                 onChange={(e) => setFefoSearch(e.target.value)}
                 placeholder="Cari nama makanan / donatur..."
-                className="pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-xs text-slate-800 dark:text-zinc-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 w-48 sm:w-56"
+                className="pl-8 pr-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#0f1726] border border-slate-200 dark:border-white/10 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 w-48 sm:w-56"
               />
             </div>
 
             <select
               value={fefoFilter}
               onChange={(e) => setFefoFilter(e.target.value as any)}
-              className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 text-xs font-semibold text-slate-700 dark:text-zinc-300 focus:outline-none"
+              className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-[#0f1726] border border-slate-200 dark:border-white/10 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none"
             >
               <option value="ALL">Semua Status</option>
               <option value="AMAN">🟢 Aman</option>
@@ -284,7 +284,7 @@ export default function DashboardPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-100 dark:border-zinc-800 text-[10px] uppercase font-bold text-slate-400 dark:text-zinc-500 tracking-wider">
+              <tr className="border-b border-slate-100 dark:border-slate-800 text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider">
                 <th className="pb-3 pl-1">Nama Makanan</th>
                 <th className="pb-3">Mitra Donatur</th>
                 <th className="pb-3">Sisa Stok</th>
@@ -293,16 +293,16 @@ export default function DashboardPage() {
                 <th className="pb-3 text-right pr-1">Tindakan</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60 font-medium">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-medium">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-10 text-center text-slate-400 dark:text-zinc-500">
+                  <td colSpan={6} className="py-10 text-center text-slate-500 dark:text-slate-400">
                     Memuat antrean stok FEFO...
                   </td>
                 </tr>
               ) : filteredFefo.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-10 text-center text-slate-400 dark:text-zinc-500">
+                  <td colSpan={6} className="py-10 text-center text-slate-500 dark:text-slate-400">
                     Tidak ada stok makanan aktif yang sesuai filter.
                   </td>
                 </tr>
@@ -310,23 +310,23 @@ export default function DashboardPage() {
                 filteredFefo.map((item) => (
                   <tr
                     key={item.id}
-                    className="hover:bg-slate-50/80 dark:hover:bg-zinc-800/40 transition-colors"
+                    className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors"
                   >
                     <td className="py-3.5 pl-1">
-                      <span className="font-bold text-slate-900 dark:text-white block">
+                      <span className="font-bold text-slate-900 dark:text-slate-100 block">
                         {item.name}
                       </span>
                     </td>
-                    <td className="py-3.5 text-slate-600 dark:text-zinc-300">
+                    <td className="py-3.5 text-slate-600 dark:text-slate-300">
                       {item.donor.name}
                     </td>
-                    <td className="py-3.5 font-mono font-bold text-slate-800 dark:text-zinc-200">
+                    <td className="py-3.5 font-mono font-bold text-slate-800 dark:text-slate-200">
                       {item.remainingQuantity.toLocaleString('id-ID')}{' '}
-                      <span className="text-[11px] font-sans font-normal text-slate-400 dark:text-zinc-500">
+                      <span className="text-[11px] font-sans font-normal text-slate-500 dark:text-slate-400">
                         {item.unit}
                       </span>
                     </td>
-                    <td className="py-3.5 text-slate-500 dark:text-zinc-400">
+                    <td className="py-3.5 text-slate-500 dark:text-slate-400">
                       {new Date(item.expiryAt).toLocaleString('id-ID', {
                         dateStyle: 'medium',
                         timeStyle: 'short',
@@ -348,7 +348,7 @@ export default function DashboardPage() {
                     <td className="py-3.5 text-right pr-1">
                       <Link
                         href="/distribusi/buat"
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-zinc-950 text-xs font-bold shadow-sm transition-all hover:scale-105"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-slate-200 dark:hover:bg-white text-white dark:text-slate-900 text-xs font-bold shadow-sm transition-all hover:scale-105"
                       >
                         <span>Salurkan</span>
                         <ArrowUpRight className="w-3.5 h-3.5" />

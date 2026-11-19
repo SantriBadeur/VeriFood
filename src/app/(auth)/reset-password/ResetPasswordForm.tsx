@@ -7,7 +7,7 @@ import { Eye, EyeOff, KeyRound, Sparkles, AlertCircle, CheckCircle2, ArrowRight 
 
 export default function ResetPasswordForm() {
   const searchParams = useSearchParams();
-  const token = searchParams.get('token') || '';
+  const token = searchParams?.get('token') || '';
 
   const [checking, setChecking] = useState(true);
   const [tokenValid, setTokenValid] = useState(false);

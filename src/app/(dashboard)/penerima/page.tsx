@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useCurrentUser } from '@/lib/user-context';
 import {
   Users2,
   Plus,
@@ -38,8 +39,9 @@ export default function BeneficiariesPage() {
   const [selectedType, setSelectedType] = useState('');
   const [loading, setLoading] = useState(true);
 
-  // User RBAC Role
-  const [userRole, setUserRole] = useState<'ADMIN' | 'RELAWAN' | null>(null);
+  // User RBAC Role from context (or fallback fetch if standalone)
+  const contextUser = useCurrentUser();
+  const [userRole, setUserRole] = useState<'ADMIN' | 'RELAWAN' | null>(contextUser?.role || null);
 
   // Modal State (Admin only)
   const [modalMode, setModalMode] = useState<'create' | 'edit' | null>(null);
@@ -53,17 +55,20 @@ export default function BeneficiariesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
 
-  // Fetch current user session to determine RBAC
   useEffect(() => {
-    fetch('/api/auth/me')
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data?.user?.role) {
-          setUserRole(data.user.role);
-        }
-      })
-      .catch(() => {});
-  }, []);
+    if (contextUser?.role) {
+      setUserRole(contextUser.role);
+    } else if (!userRole) {
+      fetch('/api/auth/me')
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.user?.role) {
+            setUserRole(data.user.role);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [contextUser]);
 
   const loadData = () => {
     setLoading(true);

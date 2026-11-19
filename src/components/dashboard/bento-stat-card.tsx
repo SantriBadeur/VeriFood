@@ -74,34 +74,34 @@ export function BentoStatCard({
     <motion.div
       whileHover={{ y: -4 }}
       onClick={onClick}
-      className={`p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#15181e] border border-slate-200/80 dark:border-white/10 shadow-lg shadow-slate-900/5 dark:shadow-black/30 transition-all duration-200 flex flex-col justify-between ${
+      className={`p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#131b2a] border border-slate-200/80 dark:border-white/10 shadow-lg shadow-slate-900/5 dark:shadow-black/40 transition-all duration-200 flex flex-col justify-between ${
         onClick ? 'cursor-pointer hover:border-emerald-500/50' : ''
       }`}
     >
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 mb-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
             {title}
           </p>
-          <h3 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white font-mono mt-1">
+          <h3 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100 font-mono mt-1">
             {value}
           </h3>
         </div>
 
-        <div className="p-3 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
-          <Icon className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+        <div className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-white/10">
+          <Icon className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between text-xs pt-2 border-t border-slate-100 dark:border-zinc-800/80">
-        <span className="text-slate-500 dark:text-zinc-400 font-medium">
+      <div className="mt-4 flex items-center justify-between text-xs pt-2 border-t border-slate-100 dark:border-slate-800/80">
+        <span className="text-slate-600 dark:text-slate-400 font-medium">
           {subtitle || 'Status operasional'}
         </span>
 
         {change !== undefined && (
           <span
             className={`inline-flex items-center gap-0.5 font-bold ${
-              isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+              isPositive ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-700 dark:text-rose-400'
             }`}
           >
             {isPositive ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}

@@ -88,7 +88,7 @@ export function FloatingDock({
 
       {/* Vertical Dock Container */}
       <aside
-        className={`fixed inset-y-3 left-3 z-50 flex flex-col items-center justify-between py-4 px-2.5 w-16 sm:w-[68px] rounded-3xl bg-white/90 dark:bg-[#15181e]/90 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-900/5 dark:shadow-black/40 transition-transform duration-300 select-none ${
+        className={`fixed inset-y-3 left-3 z-50 flex flex-col items-center justify-between py-4 px-2.5 w-16 sm:w-[68px] rounded-3xl bg-white/90 dark:bg-[#131b2a]/90 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-xl shadow-slate-900/5 dark:shadow-black/40 transition-transform duration-300 select-none ${
           mobileOpen ? 'translate-x-0' : '-translate-x-24 lg:translate-x-0'
         }`}
       >
@@ -97,7 +97,7 @@ export function FloatingDock({
           {mobileOpen && (
             <button
               onClick={onCloseMobile}
-              className="lg:hidden p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400"
+              className="lg:hidden p-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400"
               title="Tutup Menu"
             >
               <X className="w-5 h-5" />
@@ -106,7 +106,7 @@ export function FloatingDock({
 
           <button
             onClick={toggleTheme}
-            className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-200 bg-slate-100 dark:bg-zinc-800/80 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-amber-400 hover:scale-105 shadow-sm"
+            className="w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-200 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-amber-400 hover:scale-105 shadow-sm border border-slate-200/60 dark:border-white/10"
             title={`Ganti ke mode ${theme === 'light' ? 'gelap' : 'terang'}`}
           >
             {theme === 'light' ? (
@@ -116,7 +116,7 @@ export function FloatingDock({
             )}
           </button>
 
-          <div className="w-8 h-[1px] bg-slate-200/80 dark:bg-zinc-800 my-1.5" />
+          <div className="w-8 h-[1px] bg-slate-200/80 dark:bg-slate-800 my-1.5" />
         </div>
 
         {/* Center: Module Navigation Icons */}
@@ -133,14 +133,14 @@ export function FloatingDock({
                 title={item.label}
                 className={`relative group flex items-center justify-center w-11 h-11 rounded-2xl transition-all duration-200 ${
                   active
-                    ? 'bg-slate-900 text-white dark:bg-white dark:text-zinc-950 shadow-md ring-2 ring-emerald-500/20 dark:ring-emerald-400/30 scale-105'
-                    : 'text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800/60'
+                    ? 'bg-slate-900 text-white dark:bg-slate-200 dark:text-slate-900 shadow-md ring-2 ring-emerald-500/20 dark:ring-emerald-400/40 scale-105'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/70'
                 }`}
               >
                 <Icon className="w-5 h-5 transition-transform group-hover:scale-110" />
 
                 {/* Micro Tooltip */}
-                <span className="absolute left-16 hidden lg:group-hover:inline-block px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-900 text-white dark:bg-zinc-800 dark:text-white shadow-lg whitespace-nowrap z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="absolute left-16 hidden lg:group-hover:inline-block px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-900 text-slate-100 dark:bg-slate-800 dark:text-slate-200 border border-slate-800 dark:border-slate-700 shadow-lg whitespace-nowrap z-50 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
                   {item.label}
                 </span>
 
@@ -155,11 +155,11 @@ export function FloatingDock({
 
         {/* Bottom: Status & Logout */}
         <div className="flex flex-col items-center gap-2.5 w-full">
-          <div className="w-8 h-[1px] bg-slate-200/80 dark:bg-zinc-800 my-1.5" />
+          <div className="w-8 h-[1px] bg-slate-200/80 dark:bg-slate-800 my-1.5" />
 
           {/* System Online Status Indicator */}
           <div
-            className="w-11 h-11 rounded-2xl flex items-center justify-center text-slate-400 dark:text-zinc-500 hover:bg-slate-100 dark:hover:bg-zinc-800/60 cursor-default"
+            className="w-11 h-11 rounded-2xl flex items-center justify-center text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800/60 cursor-default"
             title="Sistem SisaBerkah FEFO Online"
           >
             <div className="relative flex items-center justify-center">
@@ -171,7 +171,7 @@ export function FloatingDock({
           {/* Logout Button */}
           <button
             onClick={onLogout}
-            className="w-11 h-11 rounded-2xl flex items-center justify-center text-rose-500/80 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all duration-200"
+            className="w-11 h-11 rounded-2xl flex items-center justify-center text-rose-500/80 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all duration-200"
             title="Keluar (Logout)"
           >
             <LogOut className="w-5 h-5" />
