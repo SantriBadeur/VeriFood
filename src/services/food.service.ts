@@ -14,6 +14,22 @@ export interface InboundFoodInput {
   notes?: string;
 }
 
+export interface BatchInboundItemInput {
+  name: string;
+  quantity: number;
+  unit: string;
+  expiryAt: Date | string;
+  packagingIntact?: boolean;
+  temperatureSafe?: boolean;
+  visualSmellOk?: boolean;
+  notes?: string;
+}
+
+export interface BatchInboundInput {
+  donorId: string;
+  items: BatchInboundItemInput[];
+}
+
 export interface UpdateFoodMetadataInput {
   name?: string;
   donorId?: string;
@@ -61,6 +77,85 @@ export const foodService = {
     });
 
     return food;
+  },
+
+  async createBatchInbound(input: BatchInboundInput, userId: string) {
+    if (!input.items || input.items.length === 0) {
+      throw new Error('Batch penerimaan harus memiliki minimal 1 item makanan');
+    }
+
+    const donor = await prisma.donor.findUnique({
+      where: { id: input.donorId },
+    });
+
+    if (!donor) {
+      throw new Error(`Donatur dengan ID ${input.donorId} tidak ditemukan`);
+    }
+
+    const createdFoods = await prisma.$transaction(async (tx) => {
+      const itemsResult = [];
+
+      for (const item of input.items) {
+        if (!item.name || !item.name.trim()) {
+          throw new Error('Nama makanan tidak boleh kosong');
+        }
+        if (!item.quantity || item.quantity <= 0) {
+          throw new Error(`Jumlah makanan untuk "${item.name}" harus lebih dari 0`);
+        }
+
+        const intact = item.packagingIntact ?? true;
+        const tempSafe = item.temperatureSafe ?? true;
+        const smellOk = item.visualSmellOk ?? true;
+
+        const isAccepted = intact && tempSafe && smellOk;
+        const physicalStatus = isAccepted ? 'DITERIMA' : 'DITOLAK';
+        const remainingQuantity = isAccepted ? item.quantity : 0;
+
+        const food = await tx.foodStock.create({
+          data: {
+            donorId: input.donorId,
+            name: item.name.trim(),
+            initialQuantity: item.quantity,
+            remainingQuantity,
+            unit: item.unit || 'porsi',
+            expiryAt: new Date(item.expiryAt),
+            packagingIntact: intact,
+            temperatureSafe: tempSafe,
+            visualSmellOk: smellOk,
+            physicalStatus,
+            notes: item.notes || null,
+            createdByUserId: userId,
+          },
+          include: {
+            donor: true,
+          },
+        });
+
+        itemsResult.push(food);
+      }
+
+      return itemsResult;
+    });
+
+    // Record audit logs after transaction successfully completes to avoid SQLite lock contention
+    for (const food of createdFoods) {
+      await auditService.record({
+        userId,
+        action: 'INBOUND_FOOD_RECORD',
+        entity: 'FoodStock',
+        entityId: food.id,
+        details: {
+          batchInbound: true,
+          donorName: donor.name,
+          name: food.name,
+          initialQuantity: food.initialQuantity,
+          physicalStatus: food.physicalStatus,
+          remainingQuantity: food.remainingQuantity,
+        },
+      });
+    }
+
+    return createdFoods;
   },
 
   async getFEFODashboard() {

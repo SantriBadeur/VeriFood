@@ -221,16 +221,26 @@ export default function DistributionListPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-xs text-slate-500">{dist.beneficiary.address}</p>
                   {dist.beneficiary?.address && (
-                    <a
-                      href={getGoogleNavigationUrl(dist.beneficiary.address)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 hover:underline"
-                      title="Buka rute navigasi Google Maps"
-                    >
-                      <Navigation className="w-3 h-3 text-blue-600" />
-                      <span>Rute Maps</span>
-                    </a>
+                    <>
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dist.beneficiary.address)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                      >
+                        📍 Buka di Google Maps
+                      </a>
+                      <a
+                        href={getGoogleNavigationUrl(dist.beneficiary.address)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 hover:underline"
+                        title="Buka rute navigasi Google Maps"
+                      >
+                        <Navigation className="w-3 h-3 text-blue-600" />
+                        <span>Rute Navigasi</span>
+                      </a>
+                    </>
                   )}
                   {dist.beneficiary?.contact && (
                     <>
