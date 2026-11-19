@@ -346,14 +346,14 @@ describe('SisaBerkah End-to-End API Route Handlers Suite', () => {
   // 6. Reports API
   describe('/api/reports/*', () => {
     it('GET /api/reports/rescued should return segregated metric aggregates', async () => {
-      const res = await RescuedReportRoute.GET();
+      const res = await RescuedReportRoute.GET(new Request('http://localhost:3000/api/reports/rescued'));
       expect(res.status).toBe(200);
       const json = await res.json();
       expect(Array.isArray(json)).toBe(true);
     });
 
     it('GET /api/reports/donors should return transparency metrics', async () => {
-      const res = await DonorsReportRoute.GET();
+      const res = await DonorsReportRoute.GET(new Request('http://localhost:3000/api/reports/donors'));
       expect(res.status).toBe(200);
       const json = await res.json();
       expect(Array.isArray(json)).toBe(true);
