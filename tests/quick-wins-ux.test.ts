@@ -26,14 +26,14 @@ describe('Quick Wins UX Lapangan (Prioritas 2)', () => {
       expect(getGoogleMapsUrl('   ')).toBe('');
     });
 
-    it('verifies /distribusi/page.tsx contains the Google Maps link with target="_blank" and rel="noopener noreferrer"', () => {
+    it('verifies /distribusi/page.tsx contains the Google Maps navigation link with target="_blank" and rel="noopener noreferrer"', () => {
       const filePath = path.join(process.cwd(), 'src/app/(dashboard)/distribusi/page.tsx');
       const content = fs.readFileSync(filePath, 'utf-8');
 
-      expect(content).toContain('https://www.google.com/maps/search/?api=1&query=');
+      expect(content).toContain('getGoogleNavigationUrl');
       expect(content).toContain('target="_blank"');
       expect(content).toContain('rel="noopener noreferrer"');
-      expect(content).toContain('Buka di Google Maps');
+      expect(content).toContain('Rute Navigasi');
     });
   });
 

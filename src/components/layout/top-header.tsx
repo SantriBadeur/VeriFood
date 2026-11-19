@@ -83,7 +83,7 @@ export function TopHeader({ currentUser, onOpenMobile }: TopHeaderProps) {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 w-full pt-3 pb-2 px-3 sm:px-4 flex items-center justify-between gap-3 select-none">
+    <header className="sticky top-0 z-30 w-full pt-3 pb-2 px-2.5 sm:px-4 flex items-center justify-between gap-2 sm:gap-3 select-none">
       {/* Left: Brand Badge & Mobile Hamburger */}
       <div className="flex items-center gap-3">
         <button
@@ -181,7 +181,7 @@ export function TopHeader({ currentUser, onOpenMobile }: TopHeaderProps) {
 
           {/* Floating Dropdown Panel */}
           {isBellOpen && (
-            <div className="absolute right-0 top-12 w-80 sm:w-96 bg-white dark:bg-[#131b2a] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 p-4 z-50 text-xs">
+            <div className="absolute right-0 top-12 w-[calc(100vw-1.5rem)] max-w-sm sm:w-96 bg-white dark:bg-[#131b2a] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 p-4 z-50 text-xs">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10">
                 <div className="flex items-center gap-2">
                   <div className={`p-1.5 rounded-lg ${criticalCount > 0 ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600'}`}>
@@ -256,11 +256,14 @@ export function TopHeader({ currentUser, onOpenMobile }: TopHeaderProps) {
         </div>
 
         {/* User Profile Chip */}
-        <div className="flex items-center gap-2.5 pl-1.5 pr-3 py-1 rounded-2xl bg-white/90 dark:bg-[#131b2a]/90 backdrop-blur-md border border-slate-200/80 dark:border-white/10 shadow-sm">
-          <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-emerald-600 to-[#F4B942] flex items-center justify-center text-white font-bold text-xs shadow-inner">
+        <div
+          title={`${currentUser?.name || 'Pengguna'} (${currentUser?.role === 'ADMIN' ? 'Admin' : 'Relawan'})`}
+          className="flex items-center gap-2 p-1 sm:pl-1.5 sm:pr-3 sm:py-1 rounded-2xl bg-white/90 dark:bg-[#131b2a]/90 backdrop-blur-md border border-slate-200/80 dark:border-white/10 shadow-sm shrink-0"
+        >
+          <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-emerald-600 to-[#F4B942] flex items-center justify-center text-white font-bold text-xs shadow-inner shrink-0">
             {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
           </div>
-          <div className="flex flex-col text-left leading-tight">
+          <div className="hidden sm:flex flex-col text-left leading-tight">
             <span className="text-xs font-bold text-slate-900 dark:text-slate-100 line-clamp-1 max-w-[120px]">
               {currentUser?.name || 'Memuat...'}
             </span>

@@ -37,4 +37,17 @@ describe('Top Header Capsule Tabs & RBAC', () => {
     expect(isTabActive('/donatur', '/donatur')).toBe(true);
     expect(isTabActive('/dashboard', '/distribusi')).toBe(false);
   });
+
+  it('verifies mobile 360px responsiveness in TopHeader markup', async () => {
+    const fs = await import('fs');
+    const path = await import('path');
+    const filePath = path.join(process.cwd(), 'src/components/layout/top-header.tsx');
+    const content = fs.readFileSync(filePath, 'utf-8');
+
+    // User profile chip hides text on mobile < sm to prevent overflow on 360px
+    expect(content).toContain('hidden sm:flex flex-col');
+
+    // Bell notification dropdown uses responsive width safe for 360px
+    expect(content).toMatch(/w-\[calc\(100vw-.*\)\]/);
+  });
 });

@@ -184,7 +184,101 @@ export default function StockManagePage() {
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile Card Stack (< 768px) */}
+        <div className="block md:hidden divide-y divide-slate-200">
+          {loading ? (
+            <div className="px-4 py-8 text-center text-slate-400 text-sm">
+              Memuat stok...
+            </div>
+          ) : items.length === 0 ? (
+            <div className="px-4 py-8 text-center text-slate-400 text-sm">
+              Tidak ada stok aktif.
+            </div>
+          ) : (
+            items.map((item) => {
+              const totalDisalurkan = item.initialQuantity - item.remainingQuantity;
+              return (
+                <div key={item.id} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <h3 className="font-semibold text-slate-900 text-sm leading-snug">
+                        {item.name}
+                      </h3>
+                      <p className="text-xs text-slate-400 font-normal mt-0.5">
+                        {item.donor.name}
+                      </p>
+                    </div>
+                    <span className="shrink-0 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                      {item.evaluation.label}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 p-2.5 bg-slate-50 rounded-xl text-xs">
+                    <div>
+                      <span className="text-slate-400 block text-[11px]">Stok Awal:</span>
+                      <span className="font-medium text-slate-700">
+                        {item.initialQuantity} {item.unit}
+                      </span>
+                      <span className="text-[10px] text-slate-400 block">
+                        Tersalur: {totalDisalurkan} {item.unit}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[11px]">Sisa Stok:</span>
+                      <span className="font-bold text-emerald-700 text-sm">
+                        {item.remainingQuantity} {item.unit}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 4 Action Buttons in a Touch-Friendly Grid */}
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setShelfLabelItem(item)}
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-emerald-300 bg-emerald-50 text-xs font-medium text-emerald-800 hover:bg-emerald-100 active:scale-[0.98] transition min-h-[40px]"
+                      title="Cetak label stiker wadah gudang"
+                    >
+                      <Tag className="w-3.5 h-3.5" /> Cetak Label
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openEditMeta(item)}
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 active:scale-[0.98] transition min-h-[40px]"
+                    >
+                      <FileText className="w-3.5 h-3.5" /> Edit Info
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCorrectItem(item);
+                        setNewInitialQty(item.initialQuantity.toString());
+                        setCorrectError('');
+                      }}
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-700 hover:bg-slate-50 active:scale-[0.98] transition min-h-[40px]"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" /> Koreksi
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDisposeItem(item);
+                        setDisposeQty(item.remainingQuantity.toString());
+                        setDisposeError('');
+                      }}
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-red-200 bg-red-50/50 text-xs font-medium text-red-600 hover:bg-red-50 active:scale-[0.98] transition min-h-[40px]"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" /> Buang
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop Table (>= 768px) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="bg-slate-50 text-xs uppercase text-slate-500 font-semibold border-b border-slate-200">
               <tr>

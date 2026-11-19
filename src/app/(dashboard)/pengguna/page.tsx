@@ -90,7 +90,66 @@ export default function UsersManagementPage() {
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile Card Stack (< 768px) */}
+        <div className="block md:hidden divide-y divide-slate-200">
+          {loading ? (
+            <div className="px-4 py-8 text-center text-slate-400 text-sm">
+              Memuat data pengguna...
+            </div>
+          ) : users.length === 0 ? (
+            <div className="px-4 py-8 text-center text-slate-400 text-sm">
+              Belum ada data pengguna.
+            </div>
+          ) : (
+            users.map((u) => (
+              <div key={u.id} className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h3 className="font-semibold text-slate-900 text-sm leading-snug">{u.name}</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">{u.email}</p>
+                  </div>
+                  <span
+                    className={`shrink-0 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                      u.role === 'ADMIN'
+                        ? 'bg-purple-100 text-purple-800'
+                        : 'bg-emerald-100 text-emerald-800'
+                    }`}
+                  >
+                    {u.role}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <div>
+                    {u.isActive ? (
+                      <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium">
+                        <UserCheck className="w-4 h-4" /> Akun Aktif
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs text-red-500 font-medium">
+                        <UserX className="w-4 h-4" /> Dinonaktifkan
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleToggle(u.id, u.isActive)}
+                    className={`text-xs px-3.5 py-1.5 rounded-lg border font-medium active:scale-95 transition ${
+                      u.isActive
+                        ? 'border-red-200 text-red-600 hover:bg-red-50'
+                        : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'
+                    }`}
+                  >
+                    {u.isActive ? 'Nonaktifkan' : 'Aktifkan'}
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop Table (>= 768px) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="bg-slate-50 text-xs uppercase text-slate-500 font-semibold border-b border-slate-200">
               <tr>

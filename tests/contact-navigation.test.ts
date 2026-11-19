@@ -73,5 +73,13 @@ describe('Task 2: Direct Contact (Call & WhatsApp) and Navigation Links', () => 
       expect(content).toContain('getCallUrl');
       expect(content).toContain('getGoogleNavigationUrl');
     });
+
+    it('verifies redundant Buka di Google Maps link is removed and single Rute Navigasi button is retained', () => {
+      const filePath = path.join(process.cwd(), 'src/app/(dashboard)/distribusi/page.tsx');
+      const content = fs.readFileSync(filePath, 'utf-8');
+
+      expect(content).not.toContain('Buka di Google Maps');
+      expect(content).toContain('Rute Navigasi');
+    });
   });
 });

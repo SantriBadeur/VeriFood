@@ -229,9 +229,80 @@ export default function DonorsPage() {
         </div>
       </div>
 
-      {/* Donors Table */}
+      {/* Donors Card Stack (Mobile) & Table (Desktop) */}
       <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile Card Stack (< 768px) */}
+        <div className="block md:hidden divide-y divide-slate-100">
+          {loading ? (
+            <div className="px-6 py-12 text-center text-slate-400 text-sm">
+              Memuat data donatur...
+            </div>
+          ) : donors.length === 0 ? (
+            <div className="px-6 py-12 text-center">
+              <Building2 className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+              <p className="text-slate-600 font-semibold text-sm">Tidak ditemukan data donatur</p>
+              <p className="text-xs text-slate-400 mt-1">
+                Coba ubah kata kunci pencarian atau filter kategori.
+              </p>
+            </div>
+          ) : (
+            donors.map((d) => (
+              <div key={d.id} className="p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-2xl bg-emerald-50 text-[#2B6153] flex items-center justify-center font-bold text-xs shrink-0">
+                      <UtensilsCrossed className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-slate-900 text-sm leading-snug">{d.name}</h3>
+                      <p className="text-[11px] text-slate-400 font-mono mt-0.5">
+                        ID: {d.id.substring(0, 8)}
+                      </p>
+                    </div>
+                  </div>
+                  <span
+                    className={`shrink-0 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${getTypeBadgeClass(
+                      d.type
+                    )}`}
+                  >
+                    {d.type}
+                  </span>
+                </div>
+
+                <div className="space-y-1.5 text-xs text-slate-600 bg-slate-50/70 p-2.5 rounded-2xl border border-slate-100">
+                  <div className="flex items-center gap-1.5">
+                    <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span className="font-medium text-slate-700">{d.contact}</span>
+                  </div>
+                  <div className="flex items-start gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                    <span className="text-slate-500 line-clamp-2">{d.address || '-'}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => openEditModal(d)}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 active:scale-95 transition"
+                  >
+                    <Edit2 className="w-3.5 h-3.5 text-[#2B6153]" /> Ubah
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(d.id, d.name)}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50/50 border border-red-200 rounded-xl hover:bg-red-50 active:scale-95 transition"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> Hapus
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop Table (>= 768px) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600">
             <thead className="bg-slate-50/70 text-[11px] uppercase tracking-wider text-slate-500 font-semibold border-b border-slate-100">
               <tr>

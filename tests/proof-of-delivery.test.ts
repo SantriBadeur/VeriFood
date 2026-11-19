@@ -113,4 +113,15 @@ describe('Task 3: Proof of Delivery (BAST) with Photo & Digital Signature', () =
     expect(details.hasSignature).toBe(true);
     expect(details.recipientName).toBe('Ibu Sarah (Pengurus Panti)');
   });
+
+  it('verifies ProofOfDeliveryModal has max-h-[85vh] and overflow-y-auto to prevent mobile keyboard cutoff', async () => {
+    const fs = await import('fs');
+    const path = await import('path');
+    const filePath = path.join(process.cwd(), 'src/components/ProofOfDeliveryModal.tsx');
+    const content = fs.readFileSync(filePath, 'utf-8');
+
+    expect(content).toContain('max-h-[85vh]');
+    expect(content).toContain('overflow-y-auto');
+    expect(content).toContain('Simpan & Konfirmasi Diterima');
+  });
 });

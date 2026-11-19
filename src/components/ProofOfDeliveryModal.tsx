@@ -175,12 +175,12 @@ export default function ProofOfDeliveryModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] sm:max-h-[90vh] flex flex-col overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="bg-emerald-600 px-6 py-4 text-white flex items-center justify-between">
+        <div className="bg-emerald-600 px-5 sm:px-6 py-3.5 sm:py-4 text-white flex items-center justify-between shrink-0">
           <div>
-            <h2 className="text-lg font-bold">
+            <h2 className="text-base sm:text-lg font-bold">
               {readOnly ? 'Bukti Serah Terima (BAST)' : 'Konfirmasi Serah Terima Paket'}
             </h2>
             <p className="text-xs text-emerald-100">
@@ -195,8 +195,8 @@ export default function ProofOfDeliveryModal({
           </button>
         </div>
 
-        {/* Content Body */}
-        <div className="p-6 space-y-5">
+        {/* Content Body - Scrollable when keyboard appears */}
+        <div className="p-4 sm:p-6 space-y-5 overflow-y-auto flex-1">
           {error && (
             <div className="p-3 bg-red-50 text-red-700 text-xs rounded-lg border border-red-200">
               {error}
@@ -362,7 +362,7 @@ export default function ProofOfDeliveryModal({
               </div>
 
               {/* Submit Buttons */}
-              <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-100">
+              <div className="pt-3 pb-1 flex items-center justify-end gap-3 border-t border-slate-100 sticky bottom-0 bg-white">
                 <button
                   type="button"
                   onClick={onClose}
@@ -377,7 +377,7 @@ export default function ProofOfDeliveryModal({
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg shadow-sm disabled:opacity-50"
                 >
                   <Check className="w-4 h-4" />
-                  {submitting ? 'Menyimpan...' : 'Konfirmasi & Selesaikan'}
+                  {submitting ? 'Menyimpan...' : 'Simpan & Konfirmasi Diterima'}
                 </button>
               </div>
             </form>
