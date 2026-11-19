@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Download, FileBarChart2, ShieldCheck, History, Calendar, RotateCcw, Printer } from 'lucide-react';
+import { AuditDiffViewer } from '@/components/audit/audit-diff-viewer';
 
 interface RescuedMetric {
   unit: string;
@@ -290,8 +291,8 @@ export default function ReportsAndAuditPage() {
                       <td className="px-6 py-4 font-semibold text-slate-800">{log.action}</td>
                       <td className="px-6 py-4">{log.entity}</td>
                       <td className="px-6 py-4">{log.user?.name || 'Sistem'}</td>
-                      <td className="px-6 py-4 text-xs font-mono text-slate-500 max-w-xs truncate">
-                        {log.details}
+                      <td className="px-6 py-4">
+                        <AuditDiffViewer details={log.details} action={log.action} entity={log.entity} />
                       </td>
                     </tr>
                   ))
