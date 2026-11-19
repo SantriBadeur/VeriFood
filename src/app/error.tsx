@@ -15,7 +15,7 @@ export default function GlobalErrorPage({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-[#EBF7F3] flex items-center justify-center p-4 font-serif">
+    <div className="min-h-screen bg-[#EBF7F3] dark:bg-[#0c0e12] flex items-center justify-center p-4 font-sans">
       <div className="w-full max-w-md bg-white rounded-3xl p-8 sm:p-10 shadow-2xl shadow-red-900/10 border border-red-100 text-center space-y-4">
         <div className="w-16 h-16 rounded-2xl bg-red-100 text-red-700 flex items-center justify-center mx-auto">
           <AlertTriangle className="w-8 h-8" />
