@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Truck, CheckCircle2, XCircle, Plus, Calendar } from 'lucide-react';
+import { Truck, CheckCircle2, XCircle, Plus, Calendar, UserCheck } from 'lucide-react';
+import { useCurrentUser } from '@/lib/user-context';
 
 interface Distribution {
   id: string;
@@ -10,14 +11,19 @@ interface Distribution {
   scheduledDate: string;
   beneficiary: { name: string; address: string };
   items: { id: string; quantity: number; foodStock: { name: string; unit: string } }[];
+  createdByUserId: string;
+  createdByUser?: { name: string; role: string };
+  assignedToUserId?: string | null;
   assignedToUser?: { name: string };
   dispatchedByUser?: { name: string };
   deliveredByUser?: { name: string };
 }
 
 export default function DistributionListPage() {
+  const currentUser = useCurrentUser();
   const [distributions, setDistributions] = useState<Distribution[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'all' | 'my-tasks'>('all');
 
   const loadData = () => {
     fetch('/api/distributions')
@@ -50,6 +56,21 @@ export default function DistributionListPage() {
     }
   };
 
+  const myTasksCount = distributions.filter(
+    (dist) =>
+      currentUser &&
+      (dist.assignedToUserId === currentUser.id || dist.createdByUserId === currentUser.id)
+  ).length;
+
+  const displayedDistributions =
+    activeTab === 'my-tasks'
+      ? distributions.filter(
+          (dist) =>
+            currentUser &&
+            (dist.assignedToUserId === currentUser.id || dist.createdByUserId === currentUser.id)
+        )
+      : distributions;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -67,23 +88,61 @@ export default function DistributionListPage() {
         </Link>
       </div>
 
+      {/* Filter Tabs: Semua Distribusi vs Tugas Saya */}
+      <div className="flex items-center gap-2 border-b border-slate-200">
+        <button
+          type="button"
+          onClick={() => setActiveTab('all')}
+          className={`pb-3 px-4 text-sm font-semibold border-b-2 transition flex items-center gap-2 ${
+            activeTab === 'all'
+              ? 'border-emerald-600 text-emerald-600'
+              : 'border-transparent text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          <span>Semua Distribusi</span>
+          <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-normal">
+            {distributions.length}
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('my-tasks')}
+          className={`pb-3 px-4 text-sm font-semibold border-b-2 transition flex items-center gap-2 ${
+            activeTab === 'my-tasks'
+              ? 'border-emerald-600 text-emerald-600'
+              : 'border-transparent text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          <span>Tugas Saya</span>
+          <span
+            className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+              myTasksCount > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
+            }`}
+          >
+            {myTasksCount}
+          </span>
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 gap-4">
         {loading ? (
           <div className="p-8 text-center text-slate-400 bg-white rounded-xl border border-slate-200">
             Memuat daftar distribusi...
           </div>
-        ) : distributions.length === 0 ? (
+        ) : displayedDistributions.length === 0 ? (
           <div className="p-8 text-center text-slate-400 bg-white rounded-xl border border-slate-200">
-            Belum ada jadwal distribusi aktif.
+            {activeTab === 'my-tasks'
+              ? 'Belum ada tugas distribusi yang ditugaskan ke Anda atau dibuat oleh Anda.'
+              : 'Belum ada jadwal distribusi aktif.'}
           </div>
         ) : (
-          distributions.map((dist) => (
+          displayedDistributions.map((dist) => (
             <div
               key={dist.id}
               className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
             >
               <div className="space-y-2">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center flex-wrap gap-2">
                   <span
                     className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                       dist.status === 'TERJADWAL'
@@ -101,6 +160,18 @@ export default function DistributionListPage() {
                     <Calendar className="w-3.5 h-3.5" />
                     {new Date(dist.scheduledDate).toLocaleDateString('id-ID', { dateStyle: 'medium' })}
                   </span>
+
+                  {/* Personal assignment badges */}
+                  {currentUser && dist.assignedToUserId === currentUser.id && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <UserCheck className="w-3 h-3" /> Tugas Anda
+                    </span>
+                  )}
+                  {currentUser && dist.createdByUserId === currentUser.id && dist.assignedToUserId !== currentUser.id && (
+                    <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                      Dibuat oleh Anda
+                    </span>
+                  )}
                 </div>
 
                 <h3 className="text-base font-bold text-slate-900">{dist.beneficiary.name}</h3>
@@ -123,7 +194,10 @@ export default function DistributionListPage() {
                   {dist.items.map((i) => `${i.foodStock.name} (${i.quantity} ${i.foodStock.unit})`).join(', ')}
                 </div>
 
-                <div className="text-[11px] text-slate-400 flex gap-4">
+                <div className="text-[11px] text-slate-400 flex flex-wrap gap-4">
+                  {dist.assignedToUser && (
+                    <span>Petugas: <strong className="font-medium text-slate-600">{dist.assignedToUser.name}</strong></span>
+                  )}
                   {dist.dispatchedByUser && <span>Dikirim oleh: {dist.dispatchedByUser.name}</span>}
                   {dist.deliveredByUser && <span>Diterima via: {dist.deliveredByUser.name}</span>}
                 </div>

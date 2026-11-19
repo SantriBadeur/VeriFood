@@ -9,8 +9,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Tidak terautentikasi' }, { status: 401 });
     }
 
-    const { stockId, reason } = await req.json();
-    const disposed = await foodService.disposeStock(stockId, reason, user.id);
+    const { stockId, reason, quantity } = await req.json();
+    const qtyToDispose =
+      quantity !== undefined && quantity !== null && quantity !== ''
+        ? parseFloat(quantity)
+        : undefined;
+    const disposed = await foodService.disposeStock(stockId, reason, user.id, qtyToDispose);
     return NextResponse.json(disposed);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Error';

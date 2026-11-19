@@ -28,6 +28,8 @@ export default function StockManagePage() {
   // Disposal Modal
   const [disposeItem, setDisposeItem] = useState<InventoryItem | null>(null);
   const [disposalReason, setDisposalReason] = useState('Kedaluwarsa di gudang');
+  const [disposeQty, setDisposeQty] = useState('');
+  const [disposeError, setDisposeError] = useState('');
 
   const loadData = () => {
     fetch('/api/food/fefo')
@@ -69,6 +71,18 @@ export default function StockManagePage() {
   const handleDispose = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!disposeItem) return;
+    setDisposeError('');
+
+    const parsedQty = parseFloat(disposeQty);
+    if (isNaN(parsedQty) || parsedQty <= 0) {
+      setDisposeError('Jumlah yang dibuang harus lebih dari 0');
+      return;
+    }
+
+    if (parsedQty > disposeItem.remainingQuantity) {
+      setDisposeError(`Jumlah tidak boleh melebihi sisa stok (${disposeItem.remainingQuantity} ${disposeItem.unit})`);
+      return;
+    }
 
     try {
       const res = await fetch('/api/food/dispose', {
@@ -77,15 +91,18 @@ export default function StockManagePage() {
         body: JSON.stringify({
           stockId: disposeItem.id,
           reason: disposalReason,
+          quantity: parsedQty,
         }),
       });
 
-      if (!res.ok) throw new Error('Gagal mencatat pembuangan');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal mencatat pembuangan');
 
       setDisposeItem(null);
       loadData();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Error');
+      if (err instanceof Error) setDisposeError(err.message);
+      else setDisposeError('Terjadi kesalahan');
     }
   };
 
@@ -156,7 +173,11 @@ export default function StockManagePage() {
                           <Edit3 className="w-3.5 h-3.5" /> Koreksi
                         </button>
                         <button
-                          onClick={() => setDisposeItem(item)}
+                          onClick={() => {
+                            setDisposeItem(item);
+                            setDisposeQty(item.remainingQuantity.toString());
+                            setDisposeError('');
+                          }}
                           className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-red-200 text-xs font-medium text-red-600 hover:bg-red-50"
                         >
                           <Trash2 className="w-3.5 h-3.5" /> Buang
@@ -226,8 +247,58 @@ export default function StockManagePage() {
               <AlertOctagon className="w-5 h-5" /> Catat Pembuangan Makanan
             </h3>
             <p className="text-xs text-slate-600">
-              Yakin membuang sisa stok <strong>{disposeItem.remainingQuantity} {disposeItem.unit}</strong> dari <strong>{disposeItem.name}</strong>? Tindakan ini akan mengosongkan sisa stok.
+              Pencatatan pembuangan makanan rusak/kedaluwarsa untuk <strong>{disposeItem.name}</strong> ({disposeItem.donor.name}).
             </p>
+
+            {disposeError && (
+              <div className="p-3 bg-red-50 text-red-700 text-xs rounded-lg border border-red-200">
+                {disposeError}
+              </div>
+            )}
+
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <label className="block text-sm font-medium text-slate-700">
+                  Berapa jumlah yang ingin dibuang?
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setDisposeQty(disposeItem.remainingQuantity.toString())}
+                  className="text-xs text-emerald-600 hover:text-emerald-700 font-medium hover:underline"
+                >
+                  Buang Semua ({disposeItem.remainingQuantity} {disposeItem.unit})
+                </button>
+              </div>
+              <div className="relative">
+                <input
+                  type="number"
+                  step="any"
+                  min="0.01"
+                  max={disposeItem.remainingQuantity}
+                  value={disposeQty}
+                  onChange={(e) => setDisposeQty(e.target.value)}
+                  required
+                  placeholder={`Maks ${disposeItem.remainingQuantity}`}
+                  className="w-full rounded-lg border border-slate-300 p-2 pr-16 text-sm"
+                />
+                <span className="absolute right-3 top-2 text-xs text-slate-400 pointer-events-none">
+                  {disposeItem.unit}
+                </span>
+              </div>
+              {parseFloat(disposeQty) > 0 && parseFloat(disposeQty) <= disposeItem.remainingQuantity && (
+                <div className="mt-1.5 text-xs text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100">
+                  {parseFloat(disposeQty) === disposeItem.remainingQuantity ? (
+                    <span className="text-amber-700 font-medium">
+                      ⚠️ 100% sisa stok dibuang. Batch ini akan selesai/ditutup.
+                    </span>
+                  ) : (
+                    <span>
+                      Sisa stok setelah dibuang: <strong>{(disposeItem.remainingQuantity - parseFloat(disposeQty)).toFixed(1).replace(/\.0$/, '')} {disposeItem.unit}</strong> (tetap tersedia di FEFO).
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Alasan Pembuangan</label>
@@ -236,6 +307,7 @@ export default function StockManagePage() {
                 onChange={(e) => setDisposalReason(e.target.value)}
                 required
                 rows={2}
+                placeholder="Contoh: 5 porsi basi/rusak terkena hujan"
                 className="w-full rounded-lg border border-slate-300 p-2 text-sm"
               />
             </div>

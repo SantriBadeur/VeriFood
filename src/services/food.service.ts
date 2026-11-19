@@ -122,19 +122,32 @@ export const foodService = {
     return updated;
   },
 
-  async disposeStock(stockId: string, reason: string, userId: string) {
+  async disposeStock(stockId: string, reason: string, userId: string, quantityToDispose?: number) {
     const current = await prisma.foodStock.findUnique({ where: { id: stockId } });
     if (!current) {
       throw new Error('Data stok makanan tidak ditemukan');
     }
 
+    const qtyToDispose = quantityToDispose !== undefined ? quantityToDispose : current.remainingQuantity;
+
+    if (qtyToDispose <= 0) {
+      throw new Error('Jumlah yang dibuang harus lebih dari 0');
+    }
+
+    if (qtyToDispose > current.remainingQuantity) {
+      throw new Error('Jumlah yang dibuang tidak boleh melebihi sisa stok');
+    }
+
+    const newRemaining = current.remainingQuantity - qtyToDispose;
+    const isFullyDisposed = newRemaining === 0;
+
     const disposed = await prisma.foodStock.update({
       where: { id: stockId },
       data: {
-        remainingQuantity: 0,
-        isDisposed: true,
+        remainingQuantity: newRemaining,
+        isDisposed: isFullyDisposed,
         disposalReason: reason,
-        disposedAt: new Date(),
+        disposedAt: isFullyDisposed ? new Date() : current.disposedAt,
       },
     });
 
@@ -145,6 +158,8 @@ export const foodService = {
       entityId: stockId,
       details: {
         previousRemaining: current.remainingQuantity,
+        disposedQuantity: qtyToDispose,
+        newRemaining,
         reason,
       },
     });
