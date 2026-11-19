@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Download, FileBarChart2, ShieldCheck, History } from 'lucide-react';
+import { Download, FileBarChart2, ShieldCheck, History, Calendar, RotateCcw } from 'lucide-react';
 
 interface RescuedMetric {
   unit: string;
@@ -33,22 +33,41 @@ export default function ReportsAndAuditPage() {
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
   const [activeTab, setActiveTab] = useState<'rescued' | 'donor' | 'audit'>('rescued');
 
+  // Date Range Filter
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const loadReports = (start?: string, end?: string) => {
+    setLoading(true);
+    const params = new URLSearchParams();
+    if (start) params.append('startDate', start);
+    if (end) params.append('endDate', end);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+
+    Promise.all([
+      fetch(`/api/reports/rescued${qs}`).then((res) => (res.ok ? res.json() : [])),
+      fetch(`/api/reports/donors${qs}`).then((res) => (res.ok ? res.json() : [])),
+      fetch(`/api/audit${qs}`).then((res) => (res.ok ? res.json() : { data: [] })),
+    ])
+      .then(([metricsData, donorsData, auditData]) => {
+        setMetrics(metricsData || []);
+        setDonorReports(donorsData || []);
+        setAuditLogs(auditData?.data || []);
+      })
+      .finally(() => setLoading(false));
+  };
+
   useEffect(() => {
-    fetch('/api/reports/rescued')
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data) => setMetrics(data));
-
-    fetch('/api/reports/donors')
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data) => setDonorReports(data));
-
-    fetch('/api/audit')
-      .then((res) => (res.ok ? res.json() : { data: [] }))
-      .then((res) => setAuditLogs(res.data || []));
+    loadReports();
   }, []);
 
   const handleDownloadCSV = (type: 'rescued' | 'donor') => {
-    window.open(`/api/reports/csv?type=${type}`, '_blank');
+    const params = new URLSearchParams();
+    params.append('type', type);
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    window.open(`/api/reports/csv?${params.toString()}`, '_blank');
   };
 
   return (
@@ -76,6 +95,54 @@ export default function ReportsAndAuditPage() {
               className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold shadow-sm"
             >
               <Download className="w-3.5 h-3.5" /> Unduh CSV Laporan Donatur
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Date Range Filter Bar */}
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-slate-700 font-semibold text-xs sm:text-sm">
+          <Calendar className="w-4 h-4 text-emerald-600" />
+          <span>Filter Periode Tanggal</span>
+        </div>
+        <div className="flex flex-wrap items-center gap-2.5 text-xs">
+          <div className="flex items-center gap-1.5">
+            <span className="text-slate-500 font-medium">Dari:</span>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="border border-slate-300 rounded-lg p-1.5 text-xs text-slate-700 focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+            />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-slate-500 font-medium">Sampai:</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="border border-slate-300 rounded-lg p-1.5 text-xs text-slate-700 focus:ring-1 focus:ring-emerald-500 focus:outline-none"
+            />
+          </div>
+          <button
+            onClick={() => loadReports(startDate, endDate)}
+            disabled={loading}
+            className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium shadow-sm transition disabled:opacity-50"
+          >
+            {loading ? 'Memuat...' : 'Terapkan'}
+          </button>
+          {(startDate || endDate) && (
+            <button
+              onClick={() => {
+                setStartDate('');
+                setEndDate('');
+                loadReports('', '');
+              }}
+              disabled={loading}
+              className="inline-flex items-center gap-1 px-3 py-1.5 border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg font-medium transition"
+            >
+              <RotateCcw className="w-3 h-3" /> Reset
             </button>
           )}
         </div>

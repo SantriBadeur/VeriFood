@@ -22,9 +22,14 @@ export const reportService = {
     };
 
     if (startDate || endDate) {
-      whereDistribution.scheduledDate = {};
-      if (startDate) (whereDistribution.scheduledDate as Record<string, unknown>).gte = startDate;
-      if (endDate) (whereDistribution.scheduledDate as Record<string, unknown>).lte = endDate;
+      const scheduledFilter: Record<string, Date> = {};
+      if (startDate) scheduledFilter.gte = new Date(startDate);
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        scheduledFilter.lte = end;
+      }
+      whereDistribution.scheduledDate = scheduledFilter;
     }
 
     const items = await prisma.distributionItem.findMany({
@@ -55,15 +60,38 @@ export const reportService = {
     }));
   },
 
-  async getDonorTransparencyReport(): Promise<DonorReportItem[]> {
+  async getDonorTransparencyReport(startDate?: Date, endDate?: Date): Promise<DonorReportItem[]> {
+    const foodWhere: Record<string, unknown> = {};
+    const distWhere: Record<string, unknown> = {
+      status: 'DITERIMA',
+    };
+
+    if (startDate || endDate) {
+      const foodCreatedAt: Record<string, Date> = {};
+      const distScheduled: Record<string, Date> = {};
+      if (startDate) {
+        foodCreatedAt.gte = new Date(startDate);
+        distScheduled.gte = new Date(startDate);
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        foodCreatedAt.lte = end;
+        distScheduled.lte = end;
+      }
+      foodWhere.createdAt = foodCreatedAt;
+      distWhere.scheduledDate = distScheduled;
+    }
+
     const donors = await prisma.donor.findMany({
       where: { isDeleted: false },
       include: {
         foods: {
+          where: foodWhere,
           include: {
             distributionItems: {
               where: {
-                distribution: { status: 'DITERIMA' },
+                distribution: distWhere,
               },
             },
           },

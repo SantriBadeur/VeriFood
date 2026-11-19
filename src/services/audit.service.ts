@@ -21,12 +21,31 @@ export const auditService = {
     });
   },
 
-  async getLogs(params?: { entity?: string; page?: number; limit?: number }) {
+  async getLogs(params?: {
+    entity?: string;
+    page?: number;
+    limit?: number;
+    startDate?: Date;
+    endDate?: Date;
+  }) {
     const page = params?.page || 1;
     const limit = params?.limit || 20;
     const skip = (page - 1) * limit;
 
-    const where = params?.entity ? { entity: params.entity } : {};
+    const where: Record<string, unknown> = {};
+    if (params?.entity) {
+      where.entity = params.entity;
+    }
+    if (params?.startDate || params?.endDate) {
+      const createdAtFilter: Record<string, Date> = {};
+      if (params.startDate) createdAtFilter.gte = new Date(params.startDate);
+      if (params.endDate) {
+        const end = new Date(params.endDate);
+        end.setHours(23, 59, 59, 999);
+        createdAtFilter.lte = end;
+      }
+      where.createdAt = createdAtFilter;
+    }
 
     const [data, total] = await Promise.all([
       prisma.auditLog.findMany({
