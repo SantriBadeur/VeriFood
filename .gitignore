@@ -40,3 +40,7 @@ next-env.d.ts
 *.db-journal
 dev.db
 
+# Antigravity / Superpowers internal docs (tidak untuk dipublish)
+docs/superpowers/
+.superpowers/
+
