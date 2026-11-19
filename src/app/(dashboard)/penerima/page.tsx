@@ -16,6 +16,7 @@ import {
   ShieldAlert,
   Building,
 } from 'lucide-react';
+import { ConfirmModal } from '@/components/ConfirmModal';
 
 interface Beneficiary {
   id: string;
@@ -166,20 +167,35 @@ export default function BeneficiariesPage() {
     }
   };
 
-  const handleDelete = async (id: string, benName: string) => {
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    id: string;
+    name: string;
+  }>({ isOpen: false, id: '', name: '' });
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [pageError, setPageError] = useState('');
+
+  const handleDelete = (id: string, benName: string) => {
     if (userRole === 'RELAWAN') return;
-    if (!confirm(`Hapus penerima manfaat "${benName}"? Data akan disembunyikan.`)) {
-      return;
-    }
+    setDeleteConfirm({ isOpen: true, id, name: benName });
+  };
+
+  const handleExecuteDelete = async () => {
+    if (!deleteConfirm.id) return;
+    setDeleteLoading(true);
     try {
-      const res = await fetch(`/api/beneficiaries/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/beneficiaries/${deleteConfirm.id}`, { method: 'DELETE' });
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || 'Hanya Admin yang dapat menghapus penerima');
       }
+      setDeleteConfirm({ isOpen: false, id: '', name: '' });
       loadData();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Gagal menghapus penerima');
+      setPageError(err instanceof Error ? err.message : 'Gagal menghapus penerima');
+      setDeleteConfirm({ isOpen: false, id: '', name: '' });
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -243,6 +259,20 @@ export default function BeneficiariesPage() {
           </button>
         )}
       </div>
+
+      {pageError && (
+        <div className="p-3.5 rounded-2xl bg-red-50 text-red-700 text-xs flex items-center justify-between border border-red-200 shadow-sm animate-in fade-in">
+          <span>{pageError}</span>
+          <button
+            type="button"
+            onClick={() => setPageError('')}
+            className="p-1 hover:bg-red-100 rounded-lg transition"
+            aria-label="Tutup pesan kesalahan"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Relawan Notice Banner */}
       {isRelawan && (
@@ -600,6 +630,18 @@ export default function BeneficiariesPage() {
           </form>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, id: '', name: '' })}
+        onConfirm={handleExecuteDelete}
+        title="Hapus Penerima Manfaat"
+        message={`Apakah Anda yakin ingin menghapus penerima manfaat "${deleteConfirm.name}"? Data akan disembunyikan.`}
+        confirmText="Hapus Penerima"
+        variant="danger"
+        loading={deleteLoading}
+      />
     </div>
   );
 }

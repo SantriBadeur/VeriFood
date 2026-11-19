@@ -4,7 +4,9 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Bell, Menu, Shield, HeartHandshake, AlertTriangle, Clock, ArrowRight, CheckCircle2, X } from 'lucide-react';
+import { Search, Bell, Menu, Shield, HeartHandshake, AlertTriangle, Clock, ArrowRight, CheckCircle2, X, KeyRound, LogOut, ChevronDown, UserCheck, User } from 'lucide-react';
+import { CommandPaletteModal } from './command-palette-modal';
+import { ChangePasswordModal } from '../ChangePasswordModal';
 
 export interface HeaderTab {
   label: string;
@@ -65,6 +67,31 @@ export function TopHeader({ currentUser, onOpenMobile }: TopHeaderProps) {
     }>
   >([]);
   const [isBellOpen, setIsBellOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch {
+      // ignore
+    } finally {
+      window.location.href = '/login';
+    }
+  };
+
+  // Global Keyboard Shortcut: Cmd+K / Ctrl+K to toggle Command Palette
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        setIsSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     const fetchCritical = () => {
@@ -87,15 +114,23 @@ export function TopHeader({ currentUser, onOpenMobile }: TopHeaderProps) {
     setIsBellOpen(false);
   }, [pathname]);
 
-  // Close notification dropdown when Escape key is pressed
+  // Auto-close profile dropdown whenever user navigates to a new page
   useEffect(() => {
-    if (!isBellOpen) return;
+    setIsProfileOpen(false);
+  }, [pathname]);
+
+  // Close dropdowns when Escape key is pressed
+  useEffect(() => {
+    if (!isBellOpen && !isProfileOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsBellOpen(false);
+      if (e.key === 'Escape') {
+        setIsBellOpen(false);
+        setIsProfileOpen(false);
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isBellOpen]);
+  }, [isBellOpen, isProfileOpen]);
 
   return (
     <header className="sticky top-0 z-30 w-full pt-3 pb-2 px-2.5 sm:px-4 flex items-center justify-between gap-2 sm:gap-3 select-none">
@@ -159,12 +194,10 @@ export function TopHeader({ currentUser, onOpenMobile }: TopHeaderProps) {
       <div className="flex items-center gap-2.5">
         {/* Quick Search Button */}
         <button
-          onClick={() => {
-            // Focus global search or show tip
-            const el = document.getElementById('search-input-field');
-            if (el) el.focus();
-          }}
+          type="button"
+          onClick={() => setIsSearchOpen(true)}
           className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-white/90 dark:bg-[#131b2a]/90 backdrop-blur-md border border-slate-200/80 dark:border-white/10 text-slate-500 dark:text-slate-400 text-xs shadow-sm hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+          aria-label="Cari data (Cmd+K)"
         >
           <Search className="w-3.5 h-3.5" />
           <span className="hidden lg:inline text-[11px] font-medium">Cari data...</span>
@@ -340,32 +373,139 @@ export function TopHeader({ currentUser, onOpenMobile }: TopHeaderProps) {
           )}
         </div>
 
-        {/* User Profile Chip */}
-        <div
-          title={`${currentUser?.name || 'Pengguna'} (${currentUser?.role === 'ADMIN' ? 'Admin' : 'Relawan'})`}
-          className="flex items-center gap-2 p-1 sm:pl-1.5 sm:pr-3 sm:py-1 rounded-2xl bg-white/90 dark:bg-[#131b2a]/90 backdrop-blur-md border border-slate-200/80 dark:border-white/10 shadow-sm shrink-0"
-        >
-          <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-emerald-600 to-[#F4B942] flex items-center justify-center text-white font-bold text-xs shadow-inner shrink-0">
-            {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
-          </div>
-          <div className="hidden sm:flex flex-col text-left leading-tight">
-            <span className="text-xs font-bold text-slate-900 dark:text-slate-100 line-clamp-1 max-w-[120px]">
-              {currentUser?.name || 'Memuat...'}
-            </span>
-            <div className="flex items-center gap-1">
-              {currentUser?.role === 'ADMIN' ? (
-                <span className="inline-flex items-center gap-0.5 text-[9px] font-extrabold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
-                  <Shield className="w-2.5 h-2.5" /> Admin
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
-                  <HeartHandshake className="w-2.5 h-2.5" /> Relawan
-                </span>
-              )}
+        {/* Interactive User Profile Menu */}
+        <div className="relative">
+          {/* Backdrop for click outside */}
+          {isProfileOpen && (
+            <div
+              onClick={() => setIsProfileOpen(false)}
+              className="fixed inset-0 z-40 bg-black/20 sm:bg-transparent transition-opacity"
+              aria-label="Tutup menu profil"
+            />
+          )}
+
+          <button
+            type="button"
+            onClick={() => setIsProfileOpen(!isProfileOpen)}
+            title={`${currentUser?.name || 'Pengguna'} (${currentUser?.role === 'ADMIN' ? 'Admin' : 'Relawan'})`}
+            className="flex items-center gap-2 p-1 sm:pl-1.5 sm:pr-3 sm:py-1 rounded-2xl bg-white/90 dark:bg-[#131b2a]/90 backdrop-blur-md border border-slate-200/80 dark:border-white/10 shadow-sm hover:border-slate-300 dark:hover:border-white/20 transition active:scale-95 shrink-0 text-left"
+            aria-expanded={isProfileOpen}
+            aria-haspopup="menu"
+            aria-label="Menu Profil Pengguna"
+          >
+            <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-emerald-600 to-[#F4B942] flex items-center justify-center text-white font-bold text-xs shadow-inner shrink-0">
+              {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
             </div>
-          </div>
+            <div className="hidden sm:flex flex-col text-left leading-tight">
+              <span className="text-xs font-bold text-slate-900 dark:text-slate-100 line-clamp-1 max-w-[120px]">
+                {currentUser?.name || 'Memuat...'}
+              </span>
+              <div className="flex items-center gap-1">
+                {currentUser?.role === 'ADMIN' ? (
+                  <span className="inline-flex items-center gap-0.5 text-[9px] font-extrabold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+                    <Shield className="w-2.5 h-2.5" /> Admin
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+                    <HeartHandshake className="w-2.5 h-2.5" /> Relawan
+                  </span>
+                )}
+              </div>
+            </div>
+            <ChevronDown
+              className={`w-3.5 h-3.5 text-slate-400 transition-transform hidden sm:block ${
+                isProfileOpen ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
+
+          {/* Floating Profile Dropdown Card */}
+          {isProfileOpen && (
+            <div
+              role="menu"
+              aria-label="Menu Akun Pengguna"
+              className="absolute right-0 top-12 w-64 bg-white dark:bg-[#131b2a] rounded-3xl shadow-2xl border border-slate-200/90 dark:border-white/10 p-3 z-50 animate-in fade-in zoom-in-95 duration-150 text-xs"
+            >
+              {/* User Info Header */}
+              <div className="p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-white/5 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-[#F4B942] flex items-center justify-center text-white font-black text-sm shadow-inner shrink-0">
+                  {currentUser?.name?.charAt(0).toUpperCase() || 'U'}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-bold text-slate-900 dark:text-slate-100 truncate text-xs">
+                    {currentUser?.name || 'Pengguna'}
+                  </h4>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                    {currentUser?.email || 'email@sisaberkah.org'}
+                  </p>
+                  <div className="mt-1">
+                    {currentUser?.role === 'ADMIN' ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 font-extrabold text-[9px] uppercase tracking-wider">
+                        <Shield className="w-2.5 h-2.5" /> Administrator
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 font-bold text-[9px] uppercase tracking-wider">
+                        <HeartHandshake className="w-2.5 h-2.5" /> Relawan
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Menu Actions */}
+              <div className="py-2 space-y-1">
+                {currentUser?.role === 'ADMIN' && (
+                  <Link
+                    href="/pengguna"
+                    onClick={() => setIsProfileOpen(false)}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition font-medium"
+                  >
+                    <UserCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <span>Kelola Akun Pengguna</span>
+                  </Link>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsProfileOpen(false);
+                    setIsChangePasswordOpen(true);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition font-medium text-left"
+                >
+                  <KeyRound className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                  <span>Ganti Kata Sandi</span>
+                </button>
+              </div>
+
+              {/* Divider & Logout */}
+              <div className="pt-2 border-t border-slate-100 dark:border-white/10">
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition font-bold text-left"
+                >
+                  <LogOut className="w-4 h-4 text-red-500" />
+                  <span>Keluar (Logout)</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Global Command Palette Modal (Ctrl+K / Cmd+K) */}
+      <CommandPaletteModal
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        currentUser={currentUser}
+      />
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+      />
     </header>
   );
 }

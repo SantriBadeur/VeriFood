@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Plus, Trash2, ArrowLeft, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Plus, Trash2, ArrowLeft, AlertTriangle, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 
 interface StockItem {
@@ -20,8 +20,11 @@ interface Beneficiary {
   capacity?: number | null;
 }
 
-export default function CreateDistributionPage() {
+function CreateDistributionForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const targetFoodStockId = searchParams.get('foodStockId');
+
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
   const [stockList, setStockList] = useState<StockItem[]>([]);
   const [volunteers, setVolunteers] = useState<{ id: string; name: string; role: string }[]>([]);
@@ -56,10 +59,13 @@ export default function CreateDistributionPage() {
     // Load available FEFO stock
     fetch('/api/food/fefo')
       .then((res) => (res.ok ? res.json() : []))
-      .then((data) => {
+      .then((data: StockItem[]) => {
         setStockList(data);
         if (data.length > 0) {
-          setItems([{ foodStockId: data[0].id, quantity: '1' }]);
+          // Prioritize targetFoodStockId if provided via query param from critical notification
+          const matched = targetFoodStockId ? data.find((s) => s.id === targetFoodStockId) : null;
+          const initialId = matched ? matched.id : data[0].id;
+          setItems([{ foodStockId: initialId, quantity: '1' }]);
         }
       });
 
@@ -70,7 +76,7 @@ export default function CreateDistributionPage() {
         setVolunteers(Array.isArray(data) ? data : []);
       })
       .catch(() => setVolunteers([]));
-  }, []);
+  }, [targetFoodStockId]);
 
   const addItemRow = () => {
     if (stockList.length === 0) return;
@@ -126,6 +132,10 @@ export default function CreateDistributionPage() {
     }
   };
 
+  const matchedCriticalStock = targetFoodStockId
+    ? stockList.find((s) => s.id === targetFoodStockId)
+    : null;
+
   return (
     <div className="max-w-3xl space-y-6">
       <div className="flex items-center gap-3">
@@ -139,6 +149,20 @@ export default function CreateDistributionPage() {
           </p>
         </div>
       </div>
+
+      {matchedCriticalStock && (
+        <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs flex items-center justify-between gap-3 shadow-sm">
+          <div className="flex items-center gap-2 min-w-0">
+            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+            <span className="truncate">
+              <strong>Prioritas Alarm Kritis:</strong> Stok <strong>{matchedCriticalStock.name}</strong> (Tersedia: {matchedCriticalStock.remainingQuantity} {matchedCriticalStock.unit}) terpilih otomatis.
+            </span>
+          </div>
+          <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-amber-200/80 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 shrink-0">
+            Kritis
+          </span>
+        </div>
+      )}
 
       {error && (
         <div className="p-4 rounded-xl bg-red-50 text-red-700 text-sm border border-red-200">
@@ -200,22 +224,21 @@ export default function CreateDistributionPage() {
                 </option>
               ))}
             </select>
-            <p className="mt-1 text-xs text-slate-400">
-              Pilih relawan yang bertanggung jawab mengantarkan paket makanan ke lokasi tujuan.
+            <p className="text-[11px] text-slate-400 mt-1">
+              Tugaskan relawan spesifik untuk pengantaran ini, atau biarkan kosong agar dapat diambil oleh relawan mana saja.
             </p>
           </div>
         </div>
 
-        {/* Multi-Item Selector */}
-        <div className="border-t border-slate-200 pt-5 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-800">Daftar Makanan (FEFO Picker)</h3>
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <label className="block text-sm font-medium text-slate-700">Item Makanan (FEFO)</label>
             <button
               type="button"
               onClick={addItemRow}
-              className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-700"
+              className="inline-flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-700 font-medium"
             >
-              <Plus className="w-3.5 h-3.5" /> Tambah Item Makanan
+              <Plus className="w-3.5 h-3.5" /> Tambah Makanan
             </button>
           </div>
 
@@ -223,7 +246,7 @@ export default function CreateDistributionPage() {
             {items.map((row, idx) => {
               const selectedStock = stockList.find((s) => s.id === row.foodStockId);
               return (
-                <div key={idx} className="flex items-center gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <div key={idx} className="flex items-center gap-3">
                   <div className="flex-1">
                     <select
                       value={row.foodStockId}
@@ -324,3 +347,16 @@ export default function CreateDistributionPage() {
   );
 }
 
+export default function CreateDistributionPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="max-w-3xl mx-auto py-12 text-center text-slate-500 text-sm">
+          Memuat formulir distribusi...
+        </div>
+      }
+    >
+      <CreateDistributionForm />
+    </Suspense>
+  );
+}

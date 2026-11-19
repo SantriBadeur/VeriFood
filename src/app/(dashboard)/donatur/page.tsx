@@ -13,6 +13,7 @@ import {
   X,
   UtensilsCrossed,
 } from 'lucide-react';
+import { ConfirmModal } from '@/components/ConfirmModal';
 
 interface Donor {
   id: string;
@@ -127,19 +128,34 @@ export default function DonorsPage() {
     }
   };
 
-  const handleDelete = async (id: string, donorName: string) => {
-    if (!confirm(`Hapus donatur "${donorName}"? Data akan disembunyikan dari daftar aktif.`)) {
-      return;
-    }
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    id: string;
+    name: string;
+  }>({ isOpen: false, id: '', name: '' });
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [pageError, setPageError] = useState('');
+
+  const handleDelete = (id: string, donorName: string) => {
+    setDeleteConfirm({ isOpen: true, id, name: donorName });
+  };
+
+  const handleExecuteDelete = async () => {
+    if (!deleteConfirm.id) return;
+    setDeleteLoading(true);
     try {
-      const res = await fetch(`/api/donors/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/donors/${deleteConfirm.id}`, { method: 'DELETE' });
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || 'Gagal menghapus donatur');
       }
+      setDeleteConfirm({ isOpen: false, id: '', name: '' });
       loadData();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Gagal menghapus donatur');
+      setPageError(err instanceof Error ? err.message : 'Gagal menghapus donatur');
+      setDeleteConfirm({ isOpen: false, id: '', name: '' });
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -182,6 +198,20 @@ export default function DonorsPage() {
           <Plus className="w-4 h-4" /> Tambah Donatur
         </button>
       </div>
+
+      {pageError && (
+        <div className="p-3.5 rounded-2xl bg-red-50 text-red-700 text-xs flex items-center justify-between border border-red-200 shadow-sm animate-in fade-in">
+          <span>{pageError}</span>
+          <button
+            type="button"
+            onClick={() => setPageError('')}
+            className="p-1 hover:bg-red-100 rounded-lg transition"
+            aria-label="Tutup pesan kesalahan"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Filter & Search Bar */}
       <div className="flex flex-col md:flex-row md:items-center gap-3">
@@ -502,6 +532,18 @@ export default function DonorsPage() {
           </form>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteConfirm.isOpen}
+        onClose={() => setDeleteConfirm({ isOpen: false, id: '', name: '' })}
+        onConfirm={handleExecuteDelete}
+        title="Hapus Data Donatur"
+        message={`Apakah Anda yakin ingin menghapus donatur "${deleteConfirm.name}"? Data akan disembunyikan dari daftar aktif.`}
+        confirmText="Hapus Donatur"
+        variant="danger"
+        loading={deleteLoading}
+      />
     </div>
   );
 }

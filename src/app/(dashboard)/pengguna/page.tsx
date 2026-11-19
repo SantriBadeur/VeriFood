@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { UserCog, Plus, ShieldCheck, UserX, UserCheck } from 'lucide-react';
+import { UserCog, Plus, ShieldCheck, UserX, UserCheck, AlertCircle } from 'lucide-react';
+import { ConfirmModal } from '@/components/ConfirmModal';
 
 interface UserItem {
   id: string;
@@ -22,6 +23,17 @@ export default function UsersManagementPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'ADMIN' | 'RELAWAN'>('RELAWAN');
+  const [modalError, setModalError] = useState('');
+  const [pageError, setPageError] = useState('');
+
+  // Confirmation modal state for toggle
+  const [toggleConfirm, setToggleConfirm] = useState<{
+    isOpen: boolean;
+    userId: string;
+    userName: string;
+    targetActive: boolean;
+  }>({ isOpen: false, userId: '', userName: '', targetActive: false });
+  const [toggleLoading, setToggleLoading] = useState(false);
 
   const loadData = () => {
     fetch('/api/users')
@@ -37,6 +49,7 @@ export default function UsersManagementPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    setModalError('');
     try {
       const res = await fetch('/api/users', {
         method: 'POST',
@@ -53,22 +66,41 @@ export default function UsersManagementPage() {
       setPassword('');
       loadData();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Error');
+      setModalError(err instanceof Error ? err.message : 'Gagal membuat pengguna');
     }
   };
 
-  const handleToggle = async (id: string, currentActive: boolean) => {
+  const handleToggle = (id: string, currentActive: boolean, userName?: string) => {
+    const target = !currentActive;
+    setToggleConfirm({
+      isOpen: true,
+      userId: id,
+      userName: userName || 'Pengguna',
+      targetActive: target,
+    });
+  };
+
+  const handleExecuteToggle = async () => {
+    if (!toggleConfirm.userId) return;
+    setToggleLoading(true);
     try {
       const res = await fetch('/api/users', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: id, isActive: !currentActive }),
+        body: JSON.stringify({ userId: toggleConfirm.userId, isActive: toggleConfirm.targetActive }),
       });
 
-      if (!res.ok) throw new Error('Gagal memperbarui status pengguna');
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Gagal memperbarui status pengguna');
+      }
+      setToggleConfirm({ isOpen: false, userId: '', userName: '', targetActive: false });
       loadData();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Error');
+      setPageError(err instanceof Error ? err.message : 'Gagal memperbarui status pengguna');
+      setToggleConfirm({ isOpen: false, userId: '', userName: '', targetActive: false });
+    } finally {
+      setToggleLoading(false);
     }
   };
 
@@ -88,6 +120,20 @@ export default function UsersManagementPage() {
           <Plus className="w-4 h-4" /> Daftarkan Pengguna
         </button>
       </div>
+
+      {pageError && (
+        <div className="p-3.5 rounded-2xl bg-red-50 text-red-700 text-xs flex items-center justify-between border border-red-200 shadow-sm animate-in fade-in">
+          <span>{pageError}</span>
+          <button
+            type="button"
+            onClick={() => setPageError('')}
+            className="p-1 hover:bg-red-100 rounded-lg transition"
+            aria-label="Tutup pesan kesalahan"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         {/* Mobile Card Stack (< 768px) */}
@@ -133,7 +179,7 @@ export default function UsersManagementPage() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => handleToggle(u.id, u.isActive)}
+                    onClick={() => handleToggle(u.id, u.isActive, u.name)}
                     className={`text-xs px-3.5 py-1.5 rounded-lg border font-medium active:scale-95 transition ${
                       u.isActive
                         ? 'border-red-200 text-red-600 hover:bg-red-50'
@@ -202,7 +248,7 @@ export default function UsersManagementPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button
-                        onClick={() => handleToggle(u.id, u.isActive)}
+                        onClick={() => handleToggle(u.id, u.isActive, u.name)}
                         className={`text-xs px-3 py-1.5 rounded-lg border font-medium ${
                           u.isActive
                             ? 'border-red-200 text-red-600 hover:bg-red-50'
@@ -224,6 +270,11 @@ export default function UsersManagementPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <form onSubmit={handleCreate} className="bg-white rounded-xl max-w-md w-full p-6 space-y-4">
             <h3 className="text-base font-bold text-slate-900">Daftarkan Pengguna Baru</h3>
+            {modalError && (
+              <div className="p-3 bg-red-50 text-red-700 text-xs rounded-lg border border-red-200">
+                {modalError}
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap</label>
               <input
@@ -268,7 +319,10 @@ export default function UsersManagementPage() {
             <div className="flex justify-end gap-2 pt-2">
               <button
                 type="button"
-                onClick={() => setShowModal(false)}
+                onClick={() => {
+                  setShowModal(false);
+                  setModalError('');
+                }}
                 className="px-4 py-2 border rounded-lg text-sm text-slate-600 hover:bg-slate-50"
               >
                 Batal
@@ -283,6 +337,22 @@ export default function UsersManagementPage() {
           </form>
         </div>
       )}
+
+      {/* Toggle Status Confirmation Modal */}
+      <ConfirmModal
+        isOpen={toggleConfirm.isOpen}
+        onClose={() => setToggleConfirm({ isOpen: false, userId: '', userName: '', targetActive: false })}
+        onConfirm={handleExecuteToggle}
+        title={toggleConfirm.targetActive ? 'Aktifkan Akun Pengguna' : 'Nonaktifkan Akun Pengguna'}
+        message={
+          toggleConfirm.targetActive
+            ? `Apakah Anda yakin ingin mengaktifkan kembali akun "${toggleConfirm.userName}"? Pengguna akan dapat masuk kembali ke sistem.`
+            : `Apakah Anda yakin ingin menonaktifkan akun "${toggleConfirm.userName}"? Pengguna tidak akan dapat mengakses sistem.`
+        }
+        confirmText={toggleConfirm.targetActive ? 'Aktifkan Akun' : 'Nonaktifkan Akun'}
+        variant={toggleConfirm.targetActive ? 'info' : 'danger'}
+        loading={toggleLoading}
+      />
     </div>
   );
 }

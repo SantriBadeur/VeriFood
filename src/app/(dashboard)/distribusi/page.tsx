@@ -6,6 +6,7 @@ import { Truck, CheckCircle2, XCircle, Plus, Calendar, UserCheck, Phone, Message
 import { useCurrentUser } from '@/lib/user-context';
 import { getWhatsAppUrl, getCallUrl, getGoogleNavigationUrl } from '@/lib/quick-wins-utils';
 import ProofOfDeliveryModal from '@/components/ProofOfDeliveryModal';
+import { ConfirmModal } from '@/components/ConfirmModal';
 
 interface Distribution {
   id: string;
@@ -80,23 +81,63 @@ export default function DistributionListPage() {
     loadData();
   };
 
-  const handleUpdateStatus = async (id: string, newStatus: string) => {
-    if (!confirm(`Konfirmasi ubah status distribusi menjadi ${newStatus}?`)) return;
+  // Confirm Modal state
+  const [confirmConfig, setConfirmConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    confirmText?: string;
+    variant?: 'danger' | 'warning' | 'info';
+    onConfirm: () => Promise<void>;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: async () => {},
+  });
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [pageError, setPageError] = useState('');
 
-    try {
-      const res = await fetch(`/api/distributions/${id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      });
+  const handleUpdateStatus = (id: string, newStatus: string) => {
+    const isCancel = newStatus === 'DIBATALKAN';
+    const isDispatch = newStatus === 'DIKIRIM';
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Gagal mengubah status');
+    setConfirmConfig({
+      isOpen: true,
+      title: isCancel
+        ? 'Batalkan Distribusi'
+        : isDispatch
+        ? 'Konfirmasi Pengiriman Logistik'
+        : `Ubah Status Menjadi ${newStatus}`,
+      message: isCancel
+        ? 'Apakah Anda yakin ingin membatalkan distribusi ini? Alokasi stok pangan akan dikembalikan ke gudang.'
+        : isDispatch
+        ? 'Status distribusi akan diubah menjadi DIKIRIM dan armada pengantaran dinyatakan sedang dalam perjalanan.'
+        : `Konfirmasi pengubahan status distribusi menjadi ${newStatus}?`,
+      confirmText: isCancel ? 'Ya, Batalkan' : isDispatch ? 'Kirim Sekarang' : 'Konfirmasi',
+      variant: isCancel ? 'danger' : 'info',
+      onConfirm: async () => {
+        setConfirmLoading(true);
+        try {
+          const res = await fetch(`/api/distributions/${id}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus }),
+          });
 
-      loadData();
-    } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Error');
-    }
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Gagal mengubah status');
+
+          setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
+          loadData();
+        } catch (err: unknown) {
+          setPageError(err instanceof Error ? err.message : 'Gagal memperbarui status');
+          setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
+        } finally {
+          setConfirmLoading(false);
+        }
+      },
+    });
   };
 
   const myTasksCount = distributions.filter(
@@ -130,6 +171,20 @@ export default function DistributionListPage() {
           <Plus className="w-4 h-4" /> Buat Jadwal Baru
         </Link>
       </div>
+
+      {pageError && (
+        <div className="p-3.5 rounded-2xl bg-red-50 text-red-700 text-xs flex items-center justify-between border border-red-200 shadow-sm animate-in fade-in">
+          <span>{pageError}</span>
+          <button
+            type="button"
+            onClick={() => setPageError('')}
+            className="p-1 hover:bg-red-100 rounded-lg transition"
+            aria-label="Tutup pesan kesalahan"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Filter Tabs: Semua Distribusi vs Tugas Saya */}
       <div className="flex items-center gap-2 border-b border-slate-200">
@@ -342,6 +397,18 @@ export default function DistributionListPage() {
           onSubmit={handleConfirmDeliveryWithProof}
         />
       )}
+
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={confirmConfig.isOpen}
+        onClose={() => setConfirmConfig((prev) => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmConfig.onConfirm}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        confirmText={confirmConfig.confirmText}
+        variant={confirmConfig.variant}
+        loading={confirmLoading}
+      />
     </div>
   );
 }

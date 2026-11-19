@@ -299,6 +299,44 @@ export const authService = {
 
     return { success: true, message: 'Kata sandi berhasil diatur ulang' };
   },
+
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    if (!userId) {
+      throw new Error('Pengguna tidak valid');
+    }
+    if (!currentPassword) {
+      throw new Error('Kata sandi saat ini wajib diisi');
+    }
+    if (!newPassword || newPassword.length < 6) {
+      throw new Error('Kata sandi baru minimal 6 karakter');
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new Error('Pengguna tidak ditemukan');
+    }
+
+    const isValid = await verifyPassword(currentPassword, user.passwordHash);
+    if (!isValid) {
+      throw new Error('Kata sandi saat ini tidak cocok');
+    }
+
+    const newHash = await hashPassword(newPassword);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash: newHash },
+    });
+
+    await auditService.record({
+      userId,
+      action: 'USER_PASSWORD_CHANGE',
+      entity: 'User',
+      entityId: userId,
+      details: { email: user.email },
+    });
+
+    return { success: true, message: 'Kata sandi berhasil diperbarui' };
+  },
 };
 
 // Aliases for tests & direct service calls
