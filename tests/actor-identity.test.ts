@@ -120,7 +120,11 @@ describe('Task 4: Actor Identity & Hardcoded Admin ID Removal', () => {
     it('should record the REAL logged-in user in distribution schedule creation', async () => {
       const ben = await prisma.beneficiary.findFirst({ where: { isDeleted: false } });
       const food = await prisma.foodStock.findFirst({
-        where: { remainingQuantity: { gt: 5 }, physicalStatus: 'DITERIMA' },
+        where: {
+          remainingQuantity: { gt: 5 },
+          physicalStatus: 'DITERIMA',
+          expiryAt: { gt: new Date() },
+        },
       });
 
       const req = new Request('http://localhost:3000/api/distributions', {

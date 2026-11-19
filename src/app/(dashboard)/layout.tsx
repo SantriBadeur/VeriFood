@@ -6,6 +6,7 @@ import { UserProvider, CurrentUser } from '@/lib/user-context';
 import { ThemeProvider } from '@/lib/theme-context';
 import { FloatingDock } from '@/components/layout/floating-dock';
 import { TopHeader } from '@/components/layout/top-header';
+import BottomNav from '@/components/layout/bottom-nav';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -60,9 +61,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             />
 
             {/* Page Canvas Container */}
-            <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-16">
+            <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 lg:pb-16">
               {children}
             </main>
+
+            {/* Mobile Bottom Navigation Bar (Gojek / Tokopedia Style for Thumb Reach) */}
+            <BottomNav currentUser={currentUser} />
           </div>
         </div>
       </UserProvider>

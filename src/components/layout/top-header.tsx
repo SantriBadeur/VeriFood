@@ -82,6 +82,16 @@ export function TopHeader({ currentUser, onOpenMobile }: TopHeaderProps) {
     return () => clearInterval(interval);
   }, []);
 
+  // Auto-close notification dropdown when user scrolls
+  useEffect(() => {
+    if (!isBellOpen) return;
+    const handleScroll = () => {
+      setIsBellOpen(false);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isBellOpen]);
+
   return (
     <header className="sticky top-0 z-30 w-full pt-3 pb-2 px-2.5 sm:px-4 flex items-center justify-between gap-2 sm:gap-3 select-none">
       {/* Left: Brand Badge & Mobile Hamburger */}
@@ -160,6 +170,14 @@ export function TopHeader({ currentUser, onOpenMobile }: TopHeaderProps) {
 
         {/* Notifications Icon with Interactive Critical Alarm Dropdown */}
         <div className="relative">
+          {/* Backdrop for click outside / mobile touch dismiss */}
+          {isBellOpen && (
+            <div
+              onClick={() => setIsBellOpen(false)}
+              className="fixed inset-0 z-40 bg-black/20 dark:bg-black/50 backdrop-blur-[1px]"
+            />
+          )}
+
           <button
             onClick={() => setIsBellOpen(!isBellOpen)}
             className={`relative p-2 rounded-2xl bg-white/90 dark:bg-[#131b2a]/90 backdrop-blur-md border border-slate-200/80 dark:border-white/10 shadow-sm transition ${
