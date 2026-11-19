@@ -26,6 +26,7 @@ describe('SisaBerkah End-to-End API Route Handlers Suite', () => {
   let createdBeneficiaryId: string;
   let createdFoodStockId: string;
   let createdDistributionId: string;
+  let authCookie: string;
 
   // 1. Auth API
   describe('POST /api/auth/login & /api/auth/logout', () => {
@@ -59,7 +60,9 @@ describe('SisaBerkah End-to-End API Route Handlers Suite', () => {
       expect(res.status).toBe(200);
       const json = await res.json();
       expect(json.user.role).toBe('ADMIN');
-      expect(res.headers.get('set-cookie')).toContain('sb_session=');
+      const setCookie = res.headers.get('set-cookie');
+      expect(setCookie).toContain('sb_session=');
+      authCookie = setCookie?.split(';')[0] || '';
     });
 
     it('should clear session on POST /api/auth/logout', async () => {
@@ -174,7 +177,10 @@ describe('SisaBerkah End-to-End API Route Handlers Suite', () => {
       const donor = await prisma.donor.findFirst({ where: { isDeleted: false } });
       const req = new Request('http://localhost:3000/api/food/inbound', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: authCookie,
+        },
         body: JSON.stringify({
           donorId: donor!.id,
           name: 'Nasi Kuning Kotak Spesial',
@@ -205,7 +211,10 @@ describe('SisaBerkah End-to-End API Route Handlers Suite', () => {
     it('POST /api/food/correct should correct stock quantity upward', async () => {
       const req = new Request('http://localhost:3000/api/food/correct', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: authCookie,
+        },
         body: JSON.stringify({
           stockId: createdFoodStockId,
           newInitialQty: 90,
@@ -239,7 +248,10 @@ describe('SisaBerkah End-to-End API Route Handlers Suite', () => {
 
       const req = new Request('http://localhost:3000/api/food/dispose', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: authCookie,
+        },
         body: JSON.stringify({
           stockId: tempStock.id,
           reason: 'Dibuang untuk tes API',
@@ -257,7 +269,10 @@ describe('SisaBerkah End-to-End API Route Handlers Suite', () => {
     it('POST /api/distributions should create scheduled distribution', async () => {
       const req = new Request('http://localhost:3000/api/distributions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: authCookie,
+        },
         body: JSON.stringify({
           beneficiaryId: createdBeneficiaryId,
           scheduledDate: new Date().toISOString(),
@@ -272,7 +287,9 @@ describe('SisaBerkah End-to-End API Route Handlers Suite', () => {
     });
 
     it('GET /api/distributions should list distributions', async () => {
-      const req = new Request('http://localhost:3000/api/distributions?page=1&limit=10');
+      const req = new Request('http://localhost:3000/api/distributions?page=1&limit=10', {
+        headers: { cookie: authCookie },
+      });
       const res = await DistributionsRoute.GET(req);
       expect(res.status).toBe(200);
       const json = await res.json();
@@ -284,7 +301,10 @@ describe('SisaBerkah End-to-End API Route Handlers Suite', () => {
       // Step 1: TERJADWAL -> DIKIRIM
       const req1 = new Request(`http://localhost:3000/api/distributions/${createdDistributionId}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: authCookie,
+        },
         body: JSON.stringify({ status: 'DIKIRIM' }),
       });
       const res1 = await DistributionStatusRoute.PATCH(req1, {
@@ -297,7 +317,10 @@ describe('SisaBerkah End-to-End API Route Handlers Suite', () => {
       // Step 2: DIKIRIM -> DITERIMA
       const req2 = new Request(`http://localhost:3000/api/distributions/${createdDistributionId}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: authCookie,
+        },
         body: JSON.stringify({ status: 'DITERIMA' }),
       });
       const res2 = await DistributionStatusRoute.PATCH(req2, {
@@ -349,7 +372,10 @@ describe('SisaBerkah End-to-End API Route Handlers Suite', () => {
   // 7. Users & Audit API
   describe('/api/users & /api/audit', () => {
     it('GET /api/users should list all users', async () => {
-      const res = await UsersRoute.GET();
+      const req = new Request('http://localhost:3000/api/users', {
+        headers: { cookie: authCookie },
+      });
+      const res = await UsersRoute.GET(req);
       expect(res.status).toBe(200);
       const json = await res.json();
       expect(Array.isArray(json)).toBe(true);
@@ -360,7 +386,10 @@ describe('SisaBerkah End-to-End API Route Handlers Suite', () => {
       const testEmail = `user_api_${Date.now()}@sisaberkah.org`;
       const req = new Request('http://localhost:3000/api/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          cookie: authCookie,
+        },
         body: JSON.stringify({
           name: 'Relawan Baru API',
           email: testEmail,

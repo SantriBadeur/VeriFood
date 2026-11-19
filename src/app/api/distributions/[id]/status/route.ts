@@ -1,19 +1,21 @@
 import { NextResponse } from 'next/server';
 import { distributionService } from '@/services/distribution.service';
-import { prisma } from '@/lib/db';
+import { getSessionUser } from '@/lib/auth';
 
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const user = await getSessionUser(req);
+    if (!user) {
+      return NextResponse.json({ error: 'Tidak terautentikasi' }, { status: 401 });
+    }
+
     const { id } = await params;
     const { status } = await req.json();
-    const admin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
-    const userId = admin?.id || 'admin';
 
-    const updated = await distributionService.updateStatus(id, status, userId);
+    const updated = await distributionService.updateStatus(id, status, user.id);
     return NextResponse.json(updated);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Error';
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }
-
