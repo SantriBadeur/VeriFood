@@ -7,6 +7,7 @@ export interface CreateBeneficiaryInput {
   type: BeneficiaryType;
   contact: string;
   address: string;
+  capacity?: number | null;
 }
 
 export const beneficiaryService = {
@@ -64,6 +65,7 @@ export const beneficiaryService = {
         type: input.type,
         contact: input.contact,
         address: input.address,
+        capacity: input.capacity !== undefined && input.capacity !== null ? Number(input.capacity) : null,
       },
     });
 
@@ -83,9 +85,14 @@ export const beneficiaryService = {
       throw new Error('Hanya Admin yang dapat mengelola data penerima');
     }
 
+    const dataToUpdate: Record<string, unknown> = { ...input };
+    if (input.capacity !== undefined) {
+      dataToUpdate.capacity = input.capacity !== null ? Number(input.capacity) : null;
+    }
+
     const beneficiary = await prisma.beneficiary.update({
       where: { id },
-      data: input,
+      data: dataToUpdate,
     });
 
     await auditService.record({

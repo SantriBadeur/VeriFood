@@ -75,6 +75,7 @@ model Beneficiary {
   type        BeneficiaryType
   contact     String
   address     String
+  capacity    Int?              // Kuota / kapasitas porsi/jiwa penerima
   isDeleted   Boolean           @default(false)
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt

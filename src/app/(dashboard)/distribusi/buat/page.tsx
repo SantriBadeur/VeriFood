@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Trash2, ArrowLeft } from 'lucide-react';
+import { Plus, Trash2, ArrowLeft, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 
 interface StockItem {
@@ -17,6 +17,7 @@ interface StockItem {
 interface Beneficiary {
   id: string;
   name: string;
+  capacity?: number | null;
 }
 
 export default function CreateDistributionPage() {
@@ -28,9 +29,18 @@ export default function CreateDistributionPage() {
   const [scheduledDate, setScheduledDate] = useState('');
   const [notes, setNotes] = useState('');
   const [items, setItems] = useState<{ foodStockId: string; quantity: string }[]>([]);
+  const [forceBypassCapacity, setForceBypassCapacity] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const selectedBeneficiary = beneficiaries.find((b) => b.id === beneficiaryId);
+  const totalAllocated = items.reduce((sum, item) => sum + (parseFloat(item.quantity) || 0), 0);
+  const isOverCapacity = Boolean(
+    selectedBeneficiary?.capacity &&
+      selectedBeneficiary.capacity > 0 &&
+      totalAllocated > selectedBeneficiary.capacity
+  );
 
   useEffect(() => {
     // Load beneficiaries
@@ -86,6 +96,7 @@ export default function CreateDistributionPage() {
           beneficiaryId,
           scheduledDate: new Date(scheduledDate).toISOString(),
           notes,
+          forceBypassCapacity,
           items: items.map((i) => ({
             foodStockId: i.foodStockId,
             quantity: parseFloat(i.quantity),
@@ -127,7 +138,16 @@ export default function CreateDistributionPage() {
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Penerima Manfaat</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-slate-700">Penerima Manfaat</label>
+              {selectedBeneficiary && (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">
+                  {selectedBeneficiary.capacity
+                    ? `Kapasitas: ${selectedBeneficiary.capacity} porsi`
+                    : 'Kapasitas: Tanpa Batas'}
+                </span>
+              )}
+            </div>
             <select
               value={beneficiaryId}
               onChange={(e) => setBeneficiaryId(e.target.value)}
@@ -136,7 +156,7 @@ export default function CreateDistributionPage() {
             >
               {beneficiaries.map((b) => (
                 <option key={b.id} value={b.id}>
-                  {b.name}
+                  {b.name} {b.capacity ? `(Kapasitas: ${b.capacity})` : ''}
                 </option>
               ))}
             </select>
@@ -233,12 +253,39 @@ export default function CreateDistributionPage() {
           />
         </div>
 
+        {isOverCapacity && (
+          <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl space-y-2 text-sm text-amber-900">
+            <div className="font-semibold flex items-center gap-2 text-amber-800">
+              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>
+                Peringatan: Alokasi ({totalAllocated} porsi) Melebihi Kapasitas ({selectedBeneficiary?.capacity} porsi)
+              </span>
+            </div>
+            <p className="text-xs text-amber-700 leading-relaxed">
+              Penerima manfaat ini tercatat memiliki kapasitas maksimum {selectedBeneficiary?.capacity} porsi. Alokasi melebihi kapasitas dapat menyebabkan makanan terbuang percuma apabila tidak habis dikonsumsi.
+            </p>
+            <label className="flex items-start sm:items-center gap-2 text-xs font-semibold text-amber-950 cursor-pointer pt-1 bg-amber-100/60 p-2.5 rounded-lg border border-amber-200">
+              <input
+                type="checkbox"
+                checked={forceBypassCapacity}
+                onChange={(e) => setForceBypassCapacity(e.target.checked)}
+                className="rounded mt-0.5 sm:mt-0 text-emerald-600 focus:ring-emerald-500"
+              />
+              <span>Saya menyetujui alokasi melebihi kapasitas untuk kebutuhan bantuan darurat (Bypass Kuota).</span>
+            </label>
+          </div>
+        )}
+
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || (isOverCapacity && !forceBypassCapacity)}
           className="w-full py-2.5 px-4 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 transition disabled:opacity-50"
         >
-          {loading ? 'Menyimpan...' : 'Jadwalkan Distribusi'}
+          {loading
+            ? 'Menyimpan...'
+            : isOverCapacity && !forceBypassCapacity
+            ? 'Konfirmasi Bypass Diperlukan'
+            : 'Jadwalkan Distribusi'}
         </button>
       </form>
     </div>

@@ -23,6 +23,7 @@ interface Beneficiary {
   type: 'PANTI_ASUHAN' | 'KOMUNITAS' | 'KELUARGA_PRASEJAHTERA';
   contact: string;
   address: string;
+  capacity?: number | null;
   createdAt: string;
 }
 
@@ -52,6 +53,7 @@ export default function BeneficiariesPage() {
   );
   const [contact, setContact] = useState('');
   const [address, setAddress] = useState('');
+  const [capacity, setCapacity] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
 
@@ -95,6 +97,7 @@ export default function BeneficiariesPage() {
     setType('PANTI_ASUHAN');
     setContact('');
     setAddress('');
+    setCapacity('');
     setFormError('');
   };
 
@@ -106,12 +109,14 @@ export default function BeneficiariesPage() {
     setType(b.type);
     setContact(b.contact);
     setAddress(b.address);
+    setCapacity(b.capacity !== null && b.capacity !== undefined ? b.capacity.toString() : '');
     setFormError('');
   };
 
   const closeModal = () => {
     setModalMode(null);
     setSelectedId(null);
+    setCapacity('');
     setFormError('');
   };
 
@@ -121,11 +126,20 @@ export default function BeneficiariesPage() {
     setFormError('');
 
     try {
+      const parsedCapacity = capacity ? parseInt(capacity, 10) : null;
+      const payload = {
+        name,
+        type,
+        contact,
+        address,
+        capacity: parsedCapacity,
+      };
+
       if (modalMode === 'create') {
         const res = await fetch('/api/beneficiaries', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, type, contact, address }),
+          body: JSON.stringify(payload),
         });
         if (!res.ok) {
           const data = await res.json();
@@ -135,7 +149,7 @@ export default function BeneficiariesPage() {
         const res = await fetch(`/api/beneficiaries/${selectedId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, type, contact, address }),
+          body: JSON.stringify(payload),
         });
         if (!res.ok) {
           const data = await res.json();
@@ -330,7 +344,7 @@ export default function BeneficiariesPage() {
                         <div>
                           <div className="font-semibold text-slate-900">{b.name}</div>
                           <div className="text-[11px] text-slate-400 font-mono">
-                            ID: {b.id.substring(0, 8)}
+                            ID: {b.id.substring(0, 8)} • Kuota: {b.capacity ? `${b.capacity} porsi` : 'Fleksibel'}
                           </div>
                         </div>
                       </div>
@@ -469,6 +483,24 @@ export default function BeneficiariesPage() {
                 rows={2}
                 className="w-full border border-slate-200 rounded-2xl p-2.5 text-sm focus:outline-none focus:border-[#2B6153] focus:ring-2 focus:ring-[#2B6153]/10"
               />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1 pl-1">
+                Kapasitas / Kuota Penerima (Porsi / Jiwa)
+              </label>
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value={capacity}
+                onChange={(e) => setCapacity(e.target.value)}
+                placeholder="cth. 30 (opsional - batas porsi alokasi)"
+                className="w-full border border-slate-200 rounded-2xl p-2.5 text-sm focus:outline-none focus:border-[#2B6153] focus:ring-2 focus:ring-[#2B6153]/10"
+              />
+              <p className="text-[11px] text-slate-400 mt-1 pl-1">
+                Digunakan untuk memvalidasi alokasi distribusi agar tidak melebihi daya tampung penerima.
+              </p>
             </div>
 
             <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">

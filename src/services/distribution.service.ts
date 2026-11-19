@@ -13,6 +13,7 @@ export interface CreateDistributionInput {
   scheduledDate: Date | string;
   assignedToUserId?: string;
   notes?: string;
+  forceBypassCapacity?: boolean;
   items: DistributionItemInput[];
 }
 
@@ -20,6 +21,29 @@ export const distributionService = {
   async createSchedule(input: CreateDistributionInput, userId: string) {
     if (!input.items || input.items.length === 0) {
       throw new Error('Distribusi harus memiliki minimal satu jenis makanan');
+    }
+
+    const beneficiary = await prisma.beneficiary.findUnique({
+      where: { id: input.beneficiaryId },
+    });
+
+    if (!beneficiary) {
+      throw new Error(`Penerima manfaat dengan ID ${input.beneficiaryId} tidak ditemukan`);
+    }
+
+    const totalQuantity = input.items.reduce((acc, curr) => acc + curr.quantity, 0);
+
+    if (
+      beneficiary.capacity !== null &&
+      beneficiary.capacity !== undefined &&
+      beneficiary.capacity > 0 &&
+      totalQuantity > beneficiary.capacity
+    ) {
+      if (!input.forceBypassCapacity) {
+        throw new Error(
+          `Alokasi (${totalQuantity} porsi) melebihi kapasitas kuota penerima (${beneficiary.capacity} porsi). Konfirmasi izin khusus diperlukan untuk melanjutkan.`
+        );
+      }
     }
 
     // Verify each item safety and available reservation quantity
@@ -84,7 +108,11 @@ export const distributionService = {
       entityId: distribution.id,
       details: {
         beneficiaryId: input.beneficiaryId,
+        beneficiaryName: beneficiary.name,
+        beneficiaryCapacity: beneficiary.capacity,
+        capacityBypassed: Boolean(input.forceBypassCapacity),
         itemCount: input.items.length,
+        totalQuantity,
       },
     });
 
