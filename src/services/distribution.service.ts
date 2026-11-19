@@ -225,7 +225,7 @@ export const distributionService = {
     });
   },
 
-  async list(params?: { status?: DistributionStatus; page?: number; limit?: number }) {
+  async list(params?: { status?: DistributionStatus; assignedToUserId?: string; page?: number; limit?: number }) {
     const page = params?.page || 1;
     const limit = params?.limit || 10;
     const skip = (page - 1) * limit;
@@ -233,6 +233,9 @@ export const distributionService = {
     const where: Record<string, unknown> = {};
     if (params?.status) {
       where.status = params.status;
+    }
+    if (params?.assignedToUserId) {
+      where.assignedToUserId = params.assignedToUserId;
     }
 
     const [data, total] = await Promise.all([

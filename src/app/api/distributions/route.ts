@@ -12,8 +12,10 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '50', 10);
+    const assignedToUserId = searchParams.get('assignedToUserId') || undefined;
+    const statusParam = searchParams.get('status') as any;
 
-    const result = await distributionService.list({ page, limit });
+    const result = await distributionService.list({ page, limit, assignedToUserId, status: statusParam });
     return NextResponse.json(result);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Error';

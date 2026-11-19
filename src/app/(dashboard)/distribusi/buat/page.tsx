@@ -24,9 +24,11 @@ export default function CreateDistributionPage() {
   const router = useRouter();
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([]);
   const [stockList, setStockList] = useState<StockItem[]>([]);
+  const [volunteers, setVolunteers] = useState<{ id: string; name: string; role: string }[]>([]);
 
   const [beneficiaryId, setBeneficiaryId] = useState('');
   const [scheduledDate, setScheduledDate] = useState('');
+  const [assignedToUserId, setAssignedToUserId] = useState('');
   const [notes, setNotes] = useState('');
   const [items, setItems] = useState<{ foodStockId: string; quantity: string }[]>([]);
   const [forceBypassCapacity, setForceBypassCapacity] = useState(false);
@@ -60,6 +62,14 @@ export default function CreateDistributionPage() {
           setItems([{ foodStockId: data[0].id, quantity: '1' }]);
         }
       });
+
+    // Load available volunteers for courier assignment
+    fetch('/api/users/volunteers')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        setVolunteers(Array.isArray(data) ? data : []);
+      })
+      .catch(() => setVolunteers([]));
   }, []);
 
   const addItemRow = () => {
@@ -95,6 +105,7 @@ export default function CreateDistributionPage() {
         body: JSON.stringify({
           beneficiaryId,
           scheduledDate: new Date(scheduledDate).toISOString(),
+          assignedToUserId: assignedToUserId || undefined,
           notes,
           forceBypassCapacity,
           items: items.map((i) => ({
@@ -171,6 +182,27 @@ export default function CreateDistributionPage() {
               required
               className="w-full rounded-lg border border-slate-300 p-2.5 text-sm"
             />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Petugas / Relawan Pengantar (Kurir Lapangan)
+            </label>
+            <select
+              value={assignedToUserId}
+              onChange={(e) => setAssignedToUserId(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 p-2.5 text-sm bg-white"
+            >
+              <option value="">-- Belum Ditugaskan (Terbuka Umum) --</option>
+              {volunteers.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.name} ({v.role === 'ADMIN' ? 'Admin' : 'Relawan'})
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-slate-400">
+              Pilih relawan yang bertanggung jawab mengantarkan paket makanan ke lokasi tujuan.
+            </p>
           </div>
         </div>
 
