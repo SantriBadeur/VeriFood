@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { AlertOctagon, Edit3, Trash2, FileText } from 'lucide-react';
+import { AlertOctagon, Edit3, Trash2, FileText, Tag } from 'lucide-react';
+import ShelfLabelModal from '@/components/ShelfLabelModal';
 
 interface InventoryItem {
   id: string;
@@ -46,6 +47,9 @@ export default function StockManagePage() {
   const [metaExpiry, setMetaExpiry] = useState('');
   const [metaNotes, setMetaNotes] = useState('');
   const [metaError, setMetaError] = useState('');
+
+  // Shelf Label Printing Modal
+  const [shelfLabelItem, setShelfLabelItem] = useState<InventoryItem | null>(null);
 
   const loadData = () => {
     fetch('/api/food/fefo')
@@ -226,6 +230,13 @@ export default function StockManagePage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right space-x-2">
+                        <button
+                          onClick={() => setShelfLabelItem(item)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 text-xs font-medium text-emerald-800 hover:bg-emerald-100 transition"
+                          title="Cetak label stiker wadah gudang"
+                        >
+                          <Tag className="w-3.5 h-3.5" /> Cetak Label
+                        </button>
                         <button
                           onClick={() => openEditMeta(item)}
                           className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-medium text-slate-700 hover:bg-slate-50"
@@ -484,6 +495,15 @@ export default function StockManagePage() {
             </div>
           </form>
         </div>
+      )}
+
+      {/* Shelf Label Modal */}
+      {shelfLabelItem && (
+        <ShelfLabelModal
+          isOpen={Boolean(shelfLabelItem)}
+          onClose={() => setShelfLabelItem(null)}
+          food={shelfLabelItem}
+        />
       )}
     </div>
   );
