@@ -157,10 +157,11 @@ export default function DistributionListPage() {
 
   return (
     <div className="space-y-6">
+      {/* Header section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Manajemen Distribusi Makanan</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Manajemen Distribusi Makanan</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Kelola alur penyaluran makanan ke penerima manfaat (US-15).
           </p>
         </div>
@@ -173,12 +174,12 @@ export default function DistributionListPage() {
       </div>
 
       {pageError && (
-        <div className="p-3.5 rounded-2xl bg-red-50 text-red-700 text-xs flex items-center justify-between border border-red-200 shadow-sm animate-in fade-in">
+        <div className="p-3.5 rounded-2xl bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-xs flex items-center justify-between border border-red-200 dark:border-red-900/40 shadow-sm animate-in fade-in">
           <span>{pageError}</span>
           <button
             type="button"
             onClick={() => setPageError('')}
-            className="p-1 hover:bg-red-100 rounded-lg transition"
+            className="p-1 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-lg transition"
             aria-label="Tutup pesan kesalahan"
           >
             ✕
@@ -187,18 +188,18 @@ export default function DistributionListPage() {
       )}
 
       {/* Filter Tabs: Semua Distribusi vs Tugas Saya */}
-      <div className="flex items-center gap-2 border-b border-slate-200">
+      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-white/10">
         <button
           type="button"
           onClick={() => setActiveTab('all')}
           className={`pb-3 px-4 text-sm font-semibold border-b-2 transition flex items-center gap-2 ${
             activeTab === 'all'
-              ? 'border-emerald-600 text-emerald-600'
-              : 'border-transparent text-slate-500 hover:text-slate-700'
+              ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400 dark:border-emerald-400'
+              : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
           }`}
         >
           <span>Semua Distribusi</span>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-normal">
+          <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-normal">
             {distributions.length}
           </span>
         </button>
@@ -207,14 +208,16 @@ export default function DistributionListPage() {
           onClick={() => setActiveTab('my-tasks')}
           className={`pb-3 px-4 text-sm font-semibold border-b-2 transition flex items-center gap-2 ${
             activeTab === 'my-tasks'
-              ? 'border-emerald-600 text-emerald-600'
-              : 'border-transparent text-slate-500 hover:text-slate-700'
+              ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400 dark:border-emerald-400'
+              : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
           }`}
         >
           <span>Tugas Saya</span>
           <span
             className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-              myTasksCount > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
+              myTasksCount > 0
+                ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
             }`}
           >
             {myTasksCount}
@@ -224,11 +227,11 @@ export default function DistributionListPage() {
 
       <div className="grid grid-cols-1 gap-4">
         {loading ? (
-          <div className="p-8 text-center text-slate-400 bg-white rounded-xl border border-slate-200">
+          <div className="p-8 text-center text-slate-400 dark:text-slate-500 bg-white dark:bg-[#131b2a] rounded-xl border border-slate-200 dark:border-white/10">
             Memuat daftar distribusi...
           </div>
         ) : displayedDistributions.length === 0 ? (
-          <div className="p-8 text-center text-slate-400 bg-white rounded-xl border border-slate-200">
+          <div className="p-8 text-center text-slate-400 dark:text-slate-500 bg-white dark:bg-[#131b2a] rounded-xl border border-slate-200 dark:border-white/10">
             {activeTab === 'my-tasks'
               ? 'Belum ada tugas distribusi yang ditugaskan ke Anda atau dibuat oleh Anda.'
               : 'Belum ada jadwal distribusi aktif.'}
@@ -237,7 +240,7 @@ export default function DistributionListPage() {
           displayedDistributions.map((dist) => (
             <div
               key={dist.id}
-              className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
+              className="bg-white dark:bg-[#131b2a] p-5 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
             >
               <div className="space-y-2">
                 <div className="flex items-center flex-wrap gap-2">
@@ -261,29 +264,29 @@ export default function DistributionListPage() {
 
                   {/* Personal assignment badges */}
                   {currentUser && dist.assignedToUserId === currentUser.id && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40">
                       <UserCheck className="w-3 h-3" /> Tugas Anda
                     </span>
                   )}
                   {currentUser && dist.createdByUserId === currentUser.id && dist.assignedToUserId !== currentUser.id && (
-                    <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                    <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40">
                       Dibuat oleh Anda
                     </span>
                   )}
                 </div>
 
-                <h3 className="text-base font-bold text-slate-900">{dist.beneficiary.name}</h3>
+                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">{dist.beneficiary.name}</h3>
                 <div className="flex flex-wrap items-center gap-2">
-                  <p className="text-xs text-slate-500">{dist.beneficiary.address}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{dist.beneficiary.address}</p>
                   {dist.beneficiary?.address && (
                     <a
                       href={getGoogleNavigationUrl(dist.beneficiary.address)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200 hover:bg-blue-100 font-medium active:scale-95 transition"
+                      className="inline-flex items-center gap-1 text-xs text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 px-2.5 py-1 rounded-lg border border-blue-200 dark:border-blue-800/40 hover:bg-blue-100 dark:hover:bg-blue-900/40 font-medium active:scale-95 transition"
                       title="Buka rute navigasi Google Maps turn-by-turn"
                     >
-                      <Navigation className="w-3.5 h-3.5 text-blue-600" />
+                      <Navigation className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                       <span>Rute Navigasi</span>
                     </a>
                   )}
@@ -291,10 +294,10 @@ export default function DistributionListPage() {
                     <>
                       <a
                         href={getCallUrl(dist.beneficiary.contact)}
-                        className="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 hover:bg-emerald-100 transition"
+                        className="inline-flex items-center gap-1 text-xs text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition"
                         title={`Hubungi telepon: ${dist.beneficiary.contact}`}
                       >
-                        <Phone className="w-3 h-3 text-emerald-600" />
+                        <Phone className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                         <span>Telepon</span>
                       </a>
                       <a
@@ -304,24 +307,24 @@ export default function DistributionListPage() {
                         )}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-300 hover:bg-emerald-200 transition font-medium"
+                        className="inline-flex items-center gap-1 text-xs text-emerald-800 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-300 dark:border-emerald-800/40 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition font-medium"
                         title={`WhatsApp langsung ke: ${dist.beneficiary.contact}`}
                       >
-                        <MessageSquare className="w-3 h-3 text-emerald-600" />
+                        <MessageSquare className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                         <span>WhatsApp</span>
                       </a>
                     </>
                   )}
                 </div>
 
-                <div className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-                  <span className="font-semibold text-slate-700">Daftar Makanan: </span>
+                <div className="text-xs text-slate-600 dark:text-slate-300 bg-slate-50/80 dark:bg-[#0f1726] p-2.5 rounded-lg border border-slate-100 dark:border-white/5">
+                  <span className="font-semibold text-slate-700 dark:text-slate-200">Daftar Makanan: </span>
                   {dist.items.map((i) => `${i.foodStock.name} (${i.quantity} ${i.foodStock.unit})`).join(', ')}
                 </div>
 
-                <div className="text-[11px] text-slate-400 flex flex-wrap gap-4">
+                <div className="text-[11px] text-slate-400 dark:text-slate-500 flex flex-wrap gap-4">
                   {dist.assignedToUser && (
-                    <span>Petugas: <strong className="font-medium text-slate-600">{dist.assignedToUser.name}</strong></span>
+                    <span>Petugas: <strong className="font-medium text-slate-600 dark:text-slate-300">{dist.assignedToUser.name}</strong></span>
                   )}
                   {dist.dispatchedByUser && <span>Dikirim oleh: {dist.dispatchedByUser.name}</span>}
                   {dist.deliveredByUser && <span>Diterima via: {dist.deliveredByUser.name}</span>}

@@ -105,8 +105,13 @@ body {
     background-color: var(--bg-surface);
   }
 
-  .dark .bg-slate-50:not([class*="dark:bg-"]) {
+  .dark .bg-slate-50:not([class*="dark:bg-"]),
+  .dark [class*="bg-slate-50/"]:not([class*="dark:bg-"]) {
     background-color: var(--bg-canvas);
+  }
+
+  .dark [class*="hover:bg-slate-50"]:hover:not([class*="dark:hover:bg-"]):not([class*="dark:bg-"]) {
+    background-color: var(--bg-surface-subtle);
   }
 
   .dark .bg-slate-100:not([class*="dark:bg-"]) {

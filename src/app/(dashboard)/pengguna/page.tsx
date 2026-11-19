@@ -108,8 +108,8 @@ export default function UsersManagementPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Kelola Akun Pengguna</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Kelola Akun Pengguna</h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Khusus Administrator: Daftarkan relawan baru dan atur status akses akun (US-02).
           </p>
         </div>
@@ -122,12 +122,12 @@ export default function UsersManagementPage() {
       </div>
 
       {pageError && (
-        <div className="p-3.5 rounded-2xl bg-red-50 text-red-700 text-xs flex items-center justify-between border border-red-200 shadow-sm animate-in fade-in">
+        <div className="p-3.5 rounded-2xl bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-xs flex items-center justify-between border border-red-200 dark:border-red-900/40 shadow-sm animate-in fade-in">
           <span>{pageError}</span>
           <button
             type="button"
             onClick={() => setPageError('')}
-            className="p-1 hover:bg-red-100 rounded-lg transition"
+            className="p-1 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-lg transition"
             aria-label="Tutup pesan kesalahan"
           >
             ✕
@@ -135,15 +135,15 @@ export default function UsersManagementPage() {
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-[#131b2a] rounded-xl border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden">
         {/* Mobile Card Stack (< 768px) */}
-        <div className="block md:hidden divide-y divide-slate-200">
+        <div className="block md:hidden divide-y divide-slate-200 dark:divide-white/5">
           {loading ? (
-            <div className="px-4 py-8 text-center text-slate-400 text-sm">
+            <div className="px-4 py-8 text-center text-slate-400 dark:text-slate-500 text-sm">
               Memuat data pengguna...
             </div>
           ) : users.length === 0 ? (
-            <div className="px-4 py-8 text-center text-slate-400 text-sm">
+            <div className="px-4 py-8 text-center text-slate-400 dark:text-slate-500 text-sm">
               Belum ada data pengguna.
             </div>
           ) : (
@@ -151,14 +151,14 @@ export default function UsersManagementPage() {
               <div key={u.id} className="p-4 space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h3 className="font-semibold text-slate-900 text-sm leading-snug">{u.name}</h3>
-                    <p className="text-xs text-slate-500 mt-0.5">{u.email}</p>
+                    <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-sm leading-snug">{u.name}</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{u.email}</p>
                   </div>
                   <span
                     className={`shrink-0 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                       u.role === 'ADMIN'
-                        ? 'bg-purple-100 text-purple-800'
-                        : 'bg-emerald-100 text-emerald-800'
+                        ? 'bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300'
+                        : 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300'
                     }`}
                   >
                     {u.role}
@@ -168,11 +168,11 @@ export default function UsersManagementPage() {
                 <div className="flex items-center justify-between pt-1">
                   <div>
                     {u.isActive ? (
-                      <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium">
+                      <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                         <UserCheck className="w-4 h-4" /> Akun Aktif
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-xs text-red-500 font-medium">
+                      <span className="inline-flex items-center gap-1 text-xs text-red-500 dark:text-red-400 font-medium">
                         <UserX className="w-4 h-4" /> Dinonaktifkan
                       </span>
                     )}
@@ -182,8 +182,8 @@ export default function UsersManagementPage() {
                     onClick={() => handleToggle(u.id, u.isActive, u.name)}
                     className={`text-xs px-3.5 py-1.5 rounded-lg border font-medium active:scale-95 transition ${
                       u.isActive
-                        ? 'border-red-200 text-red-600 hover:bg-red-50'
-                        : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'
+                        ? 'border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40'
+                        : 'border-emerald-200 dark:border-emerald-800/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
                     }`}
                   >
                     {u.isActive ? 'Nonaktifkan' : 'Aktifkan'}
@@ -196,8 +196,8 @@ export default function UsersManagementPage() {
 
         {/* Desktop Table (>= 768px) */}
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-600">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500 font-semibold border-b border-slate-200">
+          <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+            <thead className="bg-slate-50 dark:bg-[#0f1726] text-xs uppercase text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-white/10">
               <tr>
                 <th className="px-6 py-3.5">Nama</th>
                 <th className="px-6 py-3.5">Email</th>
@@ -206,30 +206,30 @@ export default function UsersManagementPage() {
                 <th className="px-6 py-3.5 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-200">
+            <tbody className="divide-y divide-slate-200 dark:divide-white/5">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-slate-400">
+                  <td colSpan={5} className="px-6 py-8 text-center text-slate-400 dark:text-slate-500">
                     Memuat data pengguna...
                   </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-slate-400">
+                  <td colSpan={5} className="px-6 py-8 text-center text-slate-400 dark:text-slate-500">
                     Belum ada data pengguna.
                   </td>
                 </tr>
               ) : (
                 users.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-50">
-                    <td className="px-6 py-4 font-medium text-slate-900">{u.name}</td>
-                    <td className="px-6 py-4">{u.email}</td>
+                  <tr key={u.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
+                    <td className="px-6 py-4 font-medium text-slate-900 dark:text-slate-100">{u.name}</td>
+                    <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{u.email}</td>
                     <td className="px-6 py-4">
                       <span
                         className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                           u.role === 'ADMIN'
-                            ? 'bg-purple-100 text-purple-800'
-                            : 'bg-emerald-100 text-emerald-800'
+                            ? 'bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300'
+                            : 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300'
                         }`}
                       >
                         {u.role}
@@ -237,11 +237,11 @@ export default function UsersManagementPage() {
                     </td>
                     <td className="px-6 py-4">
                       {u.isActive ? (
-                        <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium">
+                        <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                           <UserCheck className="w-4 h-4" /> Aktif
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-xs text-red-500 font-medium">
+                        <span className="inline-flex items-center gap-1 text-xs text-red-500 dark:text-red-400 font-medium">
                           <UserX className="w-4 h-4" /> Dinonaktifkan
                         </span>
                       )}
@@ -249,10 +249,10 @@ export default function UsersManagementPage() {
                     <td className="px-6 py-4 text-right">
                       <button
                         onClick={() => handleToggle(u.id, u.isActive, u.name)}
-                        className={`text-xs px-3 py-1.5 rounded-lg border font-medium ${
+                        className={`text-xs px-3 py-1.5 rounded-lg border font-medium transition ${
                           u.isActive
-                            ? 'border-red-200 text-red-600 hover:bg-red-50'
-                            : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'
+                            ? 'border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40'
+                            : 'border-emerald-200 dark:border-emerald-800/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
                         }`}
                       >
                         {u.isActive ? 'Nonaktifkan' : 'Aktifkan'}
@@ -267,50 +267,50 @@ export default function UsersManagementPage() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <form onSubmit={handleCreate} className="bg-white rounded-xl max-w-md w-full p-6 space-y-4">
-            <h3 className="text-base font-bold text-slate-900">Daftarkan Pengguna Baru</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm p-4">
+          <form onSubmit={handleCreate} className="bg-white dark:bg-[#131b2a] rounded-xl max-w-md w-full p-6 space-y-4 border border-slate-200 dark:border-white/10 shadow-xl">
+            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">Daftarkan Pengguna Baru</h3>
             {modalError && (
-              <div className="p-3 bg-red-50 text-red-700 text-xs rounded-lg border border-red-200">
+              <div className="p-3 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-xs rounded-lg border border-red-200 dark:border-red-900/40">
                 {modalError}
               </div>
             )}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nama Lengkap</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full border rounded-lg p-2 text-sm"
+                className="w-full bg-white dark:bg-[#0f1726] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-100 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full border rounded-lg p-2 text-sm"
+                className="w-full bg-white dark:bg-[#0f1726] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-100 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Kata Sandi Awal</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Kata Sandi Awal</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full border rounded-lg p-2 text-sm"
+                className="w-full bg-white dark:bg-[#0f1726] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-100 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">Peran Akses (RBAC)</label>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Peran Akses (RBAC)</label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as 'ADMIN' | 'RELAWAN')}
-                className="w-full border rounded-lg p-2 text-sm"
+                className="w-full bg-white dark:bg-[#0f1726] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-100 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               >
                 <option value="RELAWAN">Relawan Lapangan</option>
                 <option value="ADMIN">Administrator</option>
@@ -323,7 +323,7 @@ export default function UsersManagementPage() {
                   setShowModal(false);
                   setModalError('');
                 }}
-                className="px-4 py-2 border rounded-lg text-sm text-slate-600 hover:bg-slate-50"
+                className="px-4 py-2 border border-slate-200 dark:border-white/10 rounded-lg text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
               >
                 Batal
               </button>

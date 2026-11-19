@@ -162,15 +162,15 @@ export default function DonorsPage() {
   const getTypeBadgeClass = (t: string) => {
     switch (t) {
       case 'RESTORAN':
-        return 'bg-amber-50 text-amber-800 border-amber-200';
+        return 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800/40';
       case 'KATERING':
-        return 'bg-purple-50 text-purple-700 border-purple-200';
+        return 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800/40';
       case 'SUPERMARKET':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
+        return 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/40';
       case 'INDIVIDU':
-        return 'bg-emerald-50 text-emerald-800 border-emerald-200';
+        return 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/40';
       default:
-        return 'bg-slate-50 text-slate-700 border-slate-200';
+        return 'bg-slate-50 dark:bg-slate-800/40 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-white/10';
     }
   };
 
@@ -180,14 +180,14 @@ export default function DonorsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-800 tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">
               Direktori Donatur
             </h1>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#2B6153] font-bold border border-emerald-200">
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-[#2B6153] dark:text-emerald-400 font-bold border border-emerald-200 dark:border-emerald-800/40">
               {donors.length} Mitra Aktif
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
             Kelola mitra penyedia pangan berlebih (Restoran, Katering, Supermarket, Individu).
           </p>
         </div>
@@ -200,12 +200,12 @@ export default function DonorsPage() {
       </div>
 
       {pageError && (
-        <div className="p-3.5 rounded-2xl bg-red-50 text-red-700 text-xs flex items-center justify-between border border-red-200 shadow-sm animate-in fade-in">
+        <div className="p-3.5 rounded-2xl bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-xs flex items-center justify-between border border-red-200 dark:border-red-900/40 shadow-sm animate-in fade-in">
           <span>{pageError}</span>
           <button
             type="button"
             onClick={() => setPageError('')}
-            className="p-1 hover:bg-red-100 rounded-lg transition"
+            className="p-1 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-lg transition"
             aria-label="Tutup pesan kesalahan"
           >
             ✕
@@ -217,18 +217,18 @@ export default function DonorsPage() {
       <div className="flex flex-col md:flex-row md:items-center gap-3">
         {/* Search Input */}
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3.5 top-2.5 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3.5 top-2.5 w-4 h-4 text-slate-400 dark:text-slate-500" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Cari nama mitra, kontak, atau alamat..."
-            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-full text-xs sm:text-sm focus:outline-none focus:border-[#2B6153] focus:ring-2 focus:ring-[#2B6153]/10 transition"
+            className="w-full pl-9 pr-4 py-2 bg-white dark:bg-[#131b2a] border border-slate-200 dark:border-white/10 rounded-full text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-[#2B6153] focus:ring-2 focus:ring-[#2B6153]/10 transition"
           />
           {search && (
             <button
               onClick={() => setSearch('')}
-              className="absolute right-3 top-2 text-xs text-slate-400 hover:text-slate-600 font-medium"
+              className="absolute right-3 top-2 text-xs text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 font-medium"
             >
               Reset
             </button>
@@ -237,7 +237,7 @@ export default function DonorsPage() {
 
         {/* Quick Filter Categories */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
-          <span className="text-xs font-semibold text-slate-400 flex items-center gap-1 mr-1">
+          <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 flex items-center gap-1 mr-1">
             <Filter className="w-3.5 h-3.5" /> Filter:
           </span>
           {CATEGORIES.map((cat) => {
@@ -249,7 +249,7 @@ export default function DonorsPage() {
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition border ${
                   active
                     ? 'bg-[#2B6153] text-white border-[#2B6153] shadow-sm'
-                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                    : 'bg-white dark:bg-[#131b2a] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-slate-800'
                 }`}
               >
                 {cat.label}
@@ -260,18 +260,18 @@ export default function DonorsPage() {
       </div>
 
       {/* Donors Card Stack (Mobile) & Table (Desktop) */}
-      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-[#131b2a] rounded-3xl border border-slate-100 dark:border-white/10 shadow-sm overflow-hidden">
         {/* Mobile Card Stack (< 768px) */}
-        <div className="block md:hidden divide-y divide-slate-100">
+        <div className="block md:hidden divide-y divide-slate-100 dark:divide-white/5">
           {loading ? (
-            <div className="px-6 py-12 text-center text-slate-400 text-sm">
+            <div className="px-6 py-12 text-center text-slate-400 dark:text-slate-500 text-sm">
               Memuat data donatur...
             </div>
           ) : donors.length === 0 ? (
             <div className="px-6 py-12 text-center">
-              <Building2 className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-              <p className="text-slate-600 font-semibold text-sm">Tidak ditemukan data donatur</p>
-              <p className="text-xs text-slate-400 mt-1">
+              <Building2 className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+              <p className="text-slate-600 dark:text-slate-300 font-semibold text-sm">Tidak ditemukan data donatur</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
                 Coba ubah kata kunci pencarian atau filter kategori.
               </p>
             </div>
@@ -280,12 +280,12 @@ export default function DonorsPage() {
               <div key={d.id} className="p-4 space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-2xl bg-emerald-50 text-[#2B6153] flex items-center justify-center font-bold text-xs shrink-0">
+                    <div className="w-9 h-9 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-[#2B6153] dark:text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0">
                       <UtensilsCrossed className="w-4 h-4" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-slate-900 text-sm leading-snug">{d.name}</h3>
-                      <p className="text-[11px] text-slate-400 font-mono mt-0.5">
+                      <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-sm leading-snug">{d.name}</h3>
+                      <p className="text-[11px] text-slate-400 dark:text-slate-500 font-mono mt-0.5">
                         ID: {d.id.substring(0, 8)}
                       </p>
                     </div>
@@ -299,14 +299,14 @@ export default function DonorsPage() {
                   </span>
                 </div>
 
-                <div className="space-y-1.5 text-xs text-slate-600 bg-slate-50/70 p-2.5 rounded-2xl border border-slate-100">
+                <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-300 bg-slate-50/80 dark:bg-[#0f1726] p-2.5 rounded-2xl border border-slate-100 dark:border-white/5">
                   <div className="flex items-center gap-1.5">
-                    <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                    <span className="font-medium text-slate-700">{d.contact}</span>
+                    <Phone className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
+                    <span className="font-medium text-slate-700 dark:text-slate-200">{d.contact}</span>
                   </div>
                   <div className="flex items-start gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-                    <span className="text-slate-500 line-clamp-2">{d.address || '-'}</span>
+                    <MapPin className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0 mt-0.5" />
+                    <span className="text-slate-500 dark:text-slate-400 line-clamp-2">{d.address || '-'}</span>
                   </div>
                 </div>
 
@@ -314,14 +314,14 @@ export default function DonorsPage() {
                   <button
                     type="button"
                     onClick={() => openEditModal(d)}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 active:scale-95 transition"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-[#182337] border border-slate-200 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition"
                   >
-                    <Edit2 className="w-3.5 h-3.5 text-[#2B6153]" /> Ubah
+                    <Edit2 className="w-3.5 h-3.5 text-[#2B6153] dark:text-emerald-400" /> Ubah
                   </button>
                   <button
                     type="button"
                     onClick={() => handleDelete(d.id, d.name)}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50/50 border border-red-200 rounded-xl hover:bg-red-50 active:scale-95 transition"
+                    className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 bg-red-50/50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/50 active:scale-95 transition"
                   >
                     <Trash2 className="w-3.5 h-3.5" /> Hapus
                   </button>
@@ -333,8 +333,8 @@ export default function DonorsPage() {
 
         {/* Desktop Table (>= 768px) */}
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-600">
-            <thead className="bg-slate-50/70 text-[11px] uppercase tracking-wider text-slate-500 font-semibold border-b border-slate-100">
+          <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+            <thead className="bg-slate-50/70 dark:bg-[#0f1726] text-[11px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-100 dark:border-white/10">
               <tr>
                 <th className="px-6 py-4">Mitra Donatur</th>
                 <th className="px-6 py-4">Kategori</th>
@@ -343,34 +343,34 @@ export default function DonorsPage() {
                 <th className="px-6 py-4 text-right">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 dark:divide-white/5">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-slate-400">
+                  <td colSpan={5} className="px-6 py-12 text-center text-slate-400 dark:text-slate-500">
                     Memuat data donatur...
                   </td>
                 </tr>
               ) : donors.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-12 text-center">
-                    <Building2 className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                    <p className="text-slate-600 font-semibold">Tidak ditemukan data donatur</p>
-                    <p className="text-xs text-slate-400 mt-1">
+                    <Building2 className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                    <p className="text-slate-600 dark:text-slate-300 font-semibold">Tidak ditemukan data donatur</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
                       Coba ubah kata kunci pencarian atau filter kategori.
                     </p>
                   </td>
                 </tr>
               ) : (
                 donors.map((d) => (
-                  <tr key={d.id} className="hover:bg-slate-50/60 transition group">
+                  <tr key={d.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-2xl bg-emerald-50 text-[#2B6153] flex items-center justify-center font-bold text-xs shrink-0 group-hover:scale-105 transition">
+                        <div className="w-9 h-9 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-[#2B6153] dark:text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0 group-hover:scale-105 transition">
                           <UtensilsCrossed className="w-4 h-4" />
                         </div>
                         <div>
-                          <div className="font-semibold text-slate-900">{d.name}</div>
-                          <div className="text-[11px] text-slate-400 font-mono">
+                          <div className="font-semibold text-slate-900 dark:text-slate-100">{d.name}</div>
+                          <div className="text-[11px] text-slate-400 dark:text-slate-500 font-mono">
                             ID: {d.id.substring(0, 8)}
                           </div>
                         </div>
@@ -386,14 +386,14 @@ export default function DonorsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-1.5 text-slate-700 font-medium">
-                        <Phone className="w-3.5 h-3.5 text-slate-400" />
+                      <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-200 font-medium">
+                        <Phone className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                         <span>{d.contact}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-start gap-1.5 text-slate-500 max-w-xs truncate">
-                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+                      <div className="flex items-start gap-1.5 text-slate-500 dark:text-slate-400 max-w-xs truncate">
+                        <MapPin className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0 mt-0.5" />
                         <span>{d.address || '-'}</span>
                       </div>
                     </td>
@@ -402,14 +402,14 @@ export default function DonorsPage() {
                         <button
                           onClick={() => openEditModal(d)}
                           title="Ubah Data Donatur"
-                          className="p-2 text-slate-400 hover:text-[#2B6153] hover:bg-emerald-50 rounded-xl transition"
+                          className="p-2 text-slate-400 hover:text-[#2B6153] dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-xl transition"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(d.id, d.name)}
                           title="Hapus Donatur (Soft Delete)"
-                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition"
+                          className="p-2 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl transition"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -425,32 +425,32 @@ export default function DonorsPage() {
 
       {/* Modal Tambah / Ubah Donatur */}
       {modalMode && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm p-4">
           <form
             onSubmit={handleSubmit}
-            className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 space-y-4 shadow-2xl border border-emerald-100/60"
+            className="bg-white dark:bg-[#131b2a] rounded-3xl max-w-md w-full p-6 sm:p-7 space-y-4 shadow-2xl border border-slate-100 dark:border-white/10"
           >
-            <div className="flex items-center justify-between border-b pb-3 border-slate-100">
-              <h3 className="text-base font-bold text-slate-800">
+            <div className="flex items-center justify-between border-b pb-3 border-slate-100 dark:border-white/10">
+              <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">
                 {modalMode === 'create' ? 'Tambah Donatur Baru' : 'Ubah Data Donatur'}
               </h3>
               <button
                 type="button"
                 onClick={closeModal}
-                className="text-slate-400 hover:text-slate-600 p-1"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {formError && (
-              <div className="p-3 bg-red-50 text-red-700 border border-red-200 rounded-2xl text-xs font-medium">
+              <div className="p-3 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-900/40 rounded-2xl text-xs font-medium">
                 {formError}
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1 pl-1">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1 pl-1">
                 Nama Mitra Donatur
               </label>
               <input
@@ -459,12 +459,12 @@ export default function DonorsPage() {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="cth. Restoran Sedap Rasa"
                 required
-                className="w-full border border-slate-200 rounded-2xl p-2.5 text-sm focus:outline-none focus:border-[#2B6153] focus:ring-2 focus:ring-[#2B6153]/10"
+                className="w-full bg-white dark:bg-[#0f1726] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-2xl p-2.5 text-sm focus:outline-none focus:border-[#2B6153] focus:ring-2 focus:ring-[#2B6153]/10"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1 pl-1">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1 pl-1">
                 Kategori Donatur
               </label>
               <select
@@ -472,7 +472,7 @@ export default function DonorsPage() {
                 onChange={(e) =>
                   setType(e.target.value as 'RESTORAN' | 'KATERING' | 'SUPERMARKET' | 'INDIVIDU')
                 }
-                className="w-full border border-slate-200 rounded-2xl p-2.5 text-sm focus:outline-none focus:border-[#2B6153] bg-white"
+                className="w-full bg-white dark:bg-[#0f1726] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-100 rounded-2xl p-2.5 text-sm focus:outline-none focus:border-[#2B6153]"
               >
                 <option value="RESTORAN">Restoran</option>
                 <option value="KATERING">Katering</option>
@@ -482,7 +482,7 @@ export default function DonorsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1 pl-1">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1 pl-1">
                 Kontak / No. Telepon / WhatsApp
               </label>
               <input
@@ -491,12 +491,12 @@ export default function DonorsPage() {
                 onChange={(e) => setContact(e.target.value)}
                 placeholder="cth. 08123456789"
                 required
-                className="w-full border border-slate-200 rounded-2xl p-2.5 text-sm focus:outline-none focus:border-[#2B6153] focus:ring-2 focus:ring-[#2B6153]/10"
+                className="w-full bg-white dark:bg-[#0f1726] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-2xl p-2.5 text-sm focus:outline-none focus:border-[#2B6153] focus:ring-2 focus:ring-[#2B6153]/10"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1 pl-1">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1 pl-1">
                 Alamat Operasional (Opsional)
               </label>
               <textarea
@@ -504,16 +504,16 @@ export default function DonorsPage() {
                 onChange={(e) => setAddress(e.target.value)}
                 placeholder="cth. Jl. Pahlawan No. 45, Jakarta Selatan"
                 rows={2}
-                className="w-full border border-slate-200 rounded-2xl p-2.5 text-sm focus:outline-none focus:border-[#2B6153] focus:ring-2 focus:ring-[#2B6153]/10"
+                className="w-full bg-white dark:bg-[#0f1726] border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 rounded-2xl p-2.5 text-sm focus:outline-none focus:border-[#2B6153] focus:ring-2 focus:ring-[#2B6153]/10"
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+            <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-white/10">
               <button
                 type="button"
                 onClick={closeModal}
                 disabled={submitting}
-                className="px-4 py-2 border border-slate-200 rounded-2xl text-xs font-semibold text-slate-600 hover:bg-slate-50 transition"
+                className="px-4 py-2 border border-slate-200 dark:border-white/10 rounded-2xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
               >
                 Batal
               </button>
