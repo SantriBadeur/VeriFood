@@ -63,6 +63,7 @@ export default function DashboardPage() {
     activeDonorsCount: 0,
     recentDistributions: [],
   });
+  const [criticalAlerts, setCriticalAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedUnit, setSelectedUnit] = useState<'porsi' | 'kg' | 'all'>('porsi');
   const [fefoSearch, setFefoSearch] = useState('');
@@ -72,10 +73,12 @@ export default function DashboardPage() {
     Promise.all([
       fetch('/api/dashboard/stats').then((res) => (res.ok ? res.json() : null)),
       fetch('/api/food/fefo').then((res) => (res.ok ? res.json() : [])),
+      fetch('/api/notifications/critical').then((res) => (res.ok ? res.json() : { criticalItems: [] })),
     ])
-      .then(([statsData, fefoData]) => {
+      .then(([statsData, fefoData, criticalData]) => {
         if (statsData) setStats(statsData);
         if (Array.isArray(fefoData)) setFefoItems(fefoData);
+        if (criticalData?.criticalItems) setCriticalAlerts(criticalData.criticalItems);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -153,6 +156,31 @@ export default function DashboardPage() {
           </button>
         </div>
       </div>
+
+      {/* Critical Expiry Alarm Banner (<= 2 Hours) */}
+      {criticalAlerts.length > 0 && (
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 text-white shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-red-500/30 animate-pulse">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-white/20 backdrop-blur-md shrink-0 shadow-inner">
+              <AlertTriangle className="w-5 h-5 text-white animate-bounce" />
+            </div>
+            <div>
+              <h3 className="font-extrabold text-sm flex items-center gap-2">
+                <span>🚨 ALARM KRITIS: {criticalAlerts.length} Batch Pangan Basi dalam &le; 2 Jam!</span>
+              </h3>
+              <p className="text-xs text-red-100 mt-0.5 leading-relaxed">
+                Terdapat makanan surplus siap konsumsi yang belum terjadwal untuk dikirim. Alokasikan ke penerima manfaat sekarang agar tidak terbuang.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/distribusi/buat"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white text-red-700 text-xs font-black shadow-md hover:bg-red-50 hover:scale-105 transition-all shrink-0"
+          >
+            Jadwalkan Penyaluran Cepat <ArrowUpRight className="w-4 h-4" />
+          </Link>
+        </div>
+      )}
 
       {/* ============================================================== */}
       {/* 2. Tier 1: Core Operations & Hero Metrics (5 cols + 7 cols)    */}
